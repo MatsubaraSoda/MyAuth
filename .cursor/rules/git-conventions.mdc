@@ -1,0 +1,44 @@
+---
+description: Git 中文提交 UTF-8、分支与基线 tag、Agent 不写远端
+alwaysApply: true
+---
+
+# Git 约定（SeaTide）
+
+## 中文提交与 UTF-8（最重要）
+
+**禁止**在 PowerShell 里用多行 here-string 或 `git commit -m "…"` 直接塞中文，易出现编码损坏并永久写进提交对象。
+
+**推荐（人类与 Agent 一致）**：
+
+1. 优先在 `.git/commit_msg.txt` 写入 **UTF-8（无 BOM 亦可，以编辑器默认 UTF-8 为准）** 的提交说明（该路径不受版本控制，不会误提交）。
+2. 在仓库根目录执行：`git commit -F .git/commit_msg.txt`；修订说明用 `git commit --amend -F .git/commit_msg.txt`。
+3. 只有在确有需要时才使用工作区临时文件；若使用，先加入 `.gitignore`，并避免 `git add .` 误带临时文件。
+4. 提交成功后删除临时说明文件（若存在）。
+5. 可选全局配置（若尚未设置）：
+   - `git config --global i18n.commitEncoding utf-8`
+   - `git config --global i18n.logOutputEncoding utf-8`
+   - `git config --global core.quotepath false`
+
+## 对 Agent 的约束
+
+- 代用户执行**含中文**的 `git commit` / `git commit --amend` 时，**默认**使用 **UTF-8 说明文件 + `-F`**。
+- **不**默认通过 `core.hooksPath` 等覆盖钩子；保留用户环境中的 **prepare-commit-msg** 等行为（与本地手动提交的差异由用户自行接受）。
+- **不**执行 `git push`（及等价推送到 GitHub 等远端）；**推送由用户自行负责**。
+- 在 **PowerShell** 中执行多步命令时，默认使用 `;` 分步串联，不使用 `&&` 作为默认写法。
+
+## 本仓库提交说明样式（请沿用）
+
+- **一行主题**（建议 <=72 字符）+ 空行 + **可选**正文（说明动机或边界）。
+- 主题前加轻量前缀（与 Conventional Commits 对齐，正文中文即可）：
+  - `feat:` 新功能
+  - `fix:` 缺陷修复
+  - `docs:` 文档 / `<docs>` / 注释类说明
+  - `refactor:` 重构（不改对外行为）
+  - `chore:` 构建、依赖、杂项
+- **示例**：`feat: 增加翻译引擎切换与本地缓存`
+
+## 临时文件
+
+- 默认使用 `.git/commit_msg.txt`。
+- 若必须放在工作区，先加入 **`.gitignore`**，并使用精确暂存（如 `git add <paths>`）替代 `git add .`。
