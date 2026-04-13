@@ -14,9 +14,9 @@
 	"compatibility_flags": [
 	  "nodejs_compat"
 	],
-	"vars": {
-	  "BETTER_AUTH_URL": "http://localhost:8787"
-	},
+	// "vars": {
+	//   "BETTER_AUTH_URL": "http://localhost:8787"
+	// },
 	// "kv_namespaces": [
 	//   {
 	//     "binding": "MY_KV_NAMESPACE",

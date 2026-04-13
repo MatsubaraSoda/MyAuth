@@ -510,3 +510,162 @@ Reading config file 'E:\WorkSpace\Projects\MyAuth\drizzle.config.ts'
 
 Drizzle Studio is up and running on https://local.drizzle.studio
 ```
+
+---
+
+```bash
+MyAuth> npx wrangler d1 migrations apply auth-db --remote
+
+ ⛅️ wrangler 4.81.1
+───────────────────
+Resource location: remote 
+
+Migrations to be applied:
+┌──────────────────────────┐
+│ name                     │
+├──────────────────────────┤
+│ 0000_amazing_unicorn.sql │
+└──────────────────────────┘
+√ About to apply 1 migration(s)
+Your database may not be available to serve requests during the migration, continue? ... yes
+🌀 Executing on remote database auth-db (3304c09e-d68b-4640-94d9-868d96114bb1):
+🌀 To execute on your local development database, remove the --remote flag from your wrangler command.
+🚣 Executed 10 commands in 2.60ms
+┌──────────────────────────┬────────┐
+│ name                     │ status │
+├──────────────────────────┼────────┤
+│ 0000_amazing_unicorn.sql │ ✅     │
+└──────────────────────────┴────────┘
+```
+
+新建 `.dev.vars` ：
+
+```txt
+BETTER_AUTH_SECRET=
+```
+
+```bash
+MyAuth> npx wrangler secret put BETTER_AUTH_SECRET
+
+ ⛅️ wrangler 4.81.1
+───────────────────
+√ Enter a secret value: ... ********************************
+🌀 Creating the secret for the Worker "myauth"
+√ There doesn't seem to be a Worker called "myauth". Do you want to create a new Worker with that name and add secrets to it? ... yes
+🌀 Creating new Worker "myauth"...
+✨ Success! Uploaded secret BETTER_AUTH_SECRET
+```
+
+```bash
+MyAuth> npm run deploy
+
+> deploy
+> wrangler deploy --minify
+
+
+ ⛅️ wrangler 4.81.1
+───────────────────
+Total Upload: 878.27 KiB / gzip: 229.22 KiB
+Worker Startup Time: 92 ms
+Your Worker has access to the following bindings:
+Binding                                            Resource
+env.DB (auth-db)                                   D1 Database
+env.BETTER_AUTH_URL ("http://localhost:8787")      Environment Variable
+
+Uploaded myauth (6.47 sec)
+▲ [WARNING] Because 'workers_dev' is not in your Wrangler file, it will be enabled for this deployment by default.
+
+  To override this setting, you can disable workers.dev by explicitly setting 'workers_dev = false'
+  in your Wrangler file.
+
+
+▲ [WARNING] Because your 'workers.dev' route is enabled and your 'preview_urls' setting is not in your Wrangler file, Preview URLs will be enabled for this deployment by default.
+
+  To override this setting, you can disable Preview URLs by explicitly setting 'preview_urls =
+  false' in your Wrangler file.
+
+
+Deployed myauth triggers (2.19 sec)
+  https://myauth.matsubarasoda.workers.dev
+Current Version ID: cfab5dc5-7a62-42df-9de5-9b8875ea3750
+```
+
+---
+
+在 `wrangler.jsonc` 中注释掉 `vars` ：
+
+```jsonc
+	// "vars": {
+	//   "BETTER_AUTH_URL": "http://localhost:8787"
+	// },
+```
+
+```bash
+MyAuth> npm run deploy
+
+> deploy
+> wrangler deploy --minify
+
+
+ ⛅️ wrangler 4.81.1
+───────────────────
+Total Upload: 878.27 KiB / gzip: 229.22 KiB
+Worker Startup Time: 79 ms
+Your Worker has access to the following bindings:
+Binding               Resource
+env.DB (auth-db)      D1 Database
+
+Uploaded myauth (6.90 sec)
+Deployed myauth triggers (2.30 sec)
+  https://myauth.matsubarasoda.workers.dev
+Current Version ID: a3625f0e-d7c5-49e9-ad95-a17ab904cfcd
+```
+
+```bash
+MyAuth> npx wrangler secret put BETTER_AUTH_URL
+
+ ⛅️ wrangler 4.81.1
+───────────────────
+√ Enter a secret value: ... *****************************************
+🌀 Creating the secret for the Worker "myauth"
+✨ Success! Uploaded secret BETTER_AUTH_URL
+```
+
+```bash
+MyAuth> npx wrangler secret list
+[
+  {
+    "name": "BETTER_AUTH_SECRET",
+    "type": "secret_text"
+  },
+  {
+    "name": "BETTER_AUTH_URL",
+    "type": "secret_text"
+  }
+]
+```
+
+```bash
+MyAuth> npm run deploy
+
+> deploy
+> wrangler deploy --minify
+
+
+ ⛅️ wrangler 4.81.1
+───────────────────
+Total Upload: 878.27 KiB / gzip: 229.22 KiB
+Worker Startup Time: 86 ms
+Your Worker has access to the following bindings:
+Binding               Resource
+env.DB (auth-db)      D1 Database
+
+Uploaded myauth (6.16 sec)
+Deployed myauth triggers (1.23 sec)
+  https://myauth.matsubarasoda.workers.dev
+Current Version ID: b4037cdf-126d-49c9-86d1-ee3014a0f338
+```
+
+---
+
+
