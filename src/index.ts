@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors'; // 👈 新增：引入 Hono 自带的 cors 中间件
 import { createAuth } from './auth';
 
 // 1. 定义 Cloudflare 的环境变量类型，享受完美的 TypeScript 提示
@@ -9,13 +10,22 @@ type Bindings = {
 // 2. 实例化 Hono，并注入环境变量类型
 const app = new Hono<{ Bindings: Bindings }>();
 
+// 🌟 【核心修复 1】添加全局 CORS 中间件，必须放在具体路由的前面！
+app.use('/api/auth/*', cors({
+  origin: ['http://localhost:5173', 'https://myauthui.matsubarasoda.com'], // 允许你的本地 Vue 跨域访问
+  allowMethods: ['POST', 'GET', 'OPTIONS'], // 允许的方法
+  allowHeaders: ['Content-Type', 'Authorization'], // 允许的请求头
+  credentials: true, // 关键：允许跨域携带 Cookie (Better Auth 必须)
+}));
+
 // 3. 根目录测试路由：用于检测微服务是否存活
 app.get('/', (c) => {
   return c.text('Hello Hono! Auth Microservice is running 🚀');
 });
 
 // 4. 【核心路由】将所有与认证相关的请求，全部拦截并交给 better-auth 处理
-app.on(['POST', 'GET'], '/api/auth/**', (c) => {
+// 🌟 【核心修复 2】在数组里加上 'OPTIONS'，让 Better Auth 接管预检请求
+app.on(['POST', 'GET', 'OPTIONS'], '/api/auth/**', (c) => {
   // 唤醒我们在 auth.ts 中写好的引擎，并把数据库连接 (c.env) 喂给它
   const auth = createAuth(c.env);
   

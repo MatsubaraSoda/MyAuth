@@ -1,11 +1,18 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+
+// 未来如果你通过 Shadcn 安装了全局提示组件 (比如 Toast)
+// 通常也是放在这里引入的：
+// import Toaster from '@/components/ui/toast/Toaster.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
-</template>
+  <RouterView />
+  
+  </template>
 
-<style scoped></style>
+<style>
+/* 这里通常不需要写任何样式了，因为我们在 style.css 里已经配置了全局基础样式。
+  所有的布局样式都应该交由具体的 Layout 组件去处理。
+*/
+</style>

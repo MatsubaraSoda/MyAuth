@@ -1,0 +1,89 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { authClient } from '@/lib/auth-client'
+import { Loader2 } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+const router = useRouter()
+
+// 定义表单数据
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
+
+// 编写注册函数
+async function handleSignUp() {
+    errorMessage.value = ''
+    await authClient.signUp.email({
+        email: email.value,
+        password: password.value,
+        name: name.value,
+    }, {
+        onRequest: () => { loading.value = true },
+        onResponse: () => { loading.value = false },
+        onSuccess: () => { router.push('/profile') },
+        onError: (ctx) => {
+            errorMessage.value = ctx.error.message
+        }
+    })
+}
+</script>
+
+<template>
+    <Card class="w-full max-w-sm">
+        <CardHeader>
+            <CardTitle class="text-lg">Sign Up</CardTitle>
+            <CardDescription>
+                Enter your information to create an account
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <form id="sign-up-form" @submit.prevent="handleSignUp">
+                <div class="grid w-full items-center gap-4">
+                    <p v-if="errorMessage" class="text-sm font-medium text-destructive">
+                        {{ errorMessage }}
+                    </p>
+                    <div class="flex flex-col space-y-1.5">
+                        <Label for="name">Name</Label>
+                        <Input id="name" v-model="name" type="text" placeholder="Name" />
+                    </div>
+                    <div class="flex flex-col space-y-1.5">
+                        <Label for="email">Email</Label>
+                        <Input id="email" v-model="email" type="email" placeholder="m@example.com" />
+                    </div>
+                    <div class="flex flex-col space-y-1.5">
+                        <div class="flex items-center">
+                            <Label for="password">Password</Label>
+                        </div>
+                        <Input id="password" v-model="password" type="password" placeholder="Password" />
+                    </div>
+                </div>
+            </form>
+        </CardContent>
+        <CardFooter class="flex flex-col gap-5">
+            <Button class="w-full" type="submit" form="sign-up-form" :disabled="loading">
+                <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+                {{ loading ? 'Creating account...' : 'Create an account' }}
+            </Button>
+            <CardDescription>
+                Already have an account?
+                <RouterLink to="/auth/sign-in" class="ml-auto inline-block text-sm underline hover:text-black">
+                    Sign In
+                </RouterLink>
+            </CardDescription>
+        </CardFooter>
+    </Card>
+</template>

@@ -12,7 +12,7 @@
 		}
 	],
 	"compatibility_flags": [
-	  "nodejs_compat"
+		"nodejs_compat"
 	],
 	// "vars": {
 	//   "BETTER_AUTH_URL": "http://localhost:8787"
@@ -43,4 +43,11 @@
 	//   "enabled": true,
 	//   "head_sampling_rate": 1
 	// }
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true
+		},
+		"traces": {}
+	}
 }
