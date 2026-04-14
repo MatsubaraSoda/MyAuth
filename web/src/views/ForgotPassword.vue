@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import {
     Card,
@@ -19,6 +20,8 @@ const sentEmail = ref('')
 const isSubmitting = ref(false)
 const isSent = ref(false)
 const cooldown = ref(0)
+const errorMessage = ref('')
+const RESET_TEST_RECIPIENT = 'sudacake@outlook.com'
 
 // 倒计时逻辑
 const startCooldown = () => {
@@ -31,20 +34,33 @@ const startCooldown = () => {
     }, 1000)
 }
 
-// 模拟表单提交
-const onSubmit = () => {
+// 请求 forgot-password（临时联调：统一发到固定测试邮箱）
+const onSubmit = async () => {
     if (!email.value || isSubmitting.value || cooldown.value > 0) return
 
     // 在点击发送时冻结本次邮箱展示文案，直到下一次真正发送
     sentEmail.value = email.value
+    errorMessage.value = ''
     isSubmitting.value = true
-    
-    // 模拟 1.5 秒的网络请求延迟
-    setTimeout(() => {
-        isSubmitting.value = false
+
+    try {
+        const { error } = await authClient.requestPasswordReset({
+            email: RESET_TEST_RECIPIENT,
+            redirectTo: `${window.location.origin}/auth/reset-password`,
+        })
+
+        if (error) {
+            errorMessage.value = error.message || 'Failed to send reset email. Please try again.'
+            return
+        }
+
         isSent.value = true
-        startCooldown() // 发送成功后开始倒计时
-    }, 1500)
+        startCooldown()
+    } catch {
+        errorMessage.value = 'Network error. Please try again.'
+    } finally {
+        isSubmitting.value = false
+    }
 }
 
 </script>
@@ -64,6 +80,9 @@ const onSubmit = () => {
         <CardContent>
             <form @submit.prevent="onSubmit">
                 <div class="grid w-full items-center gap-4">
+                    <p v-if="errorMessage" class="text-sm font-medium text-destructive">
+                        {{ errorMessage }}
+                    </p>
                     <div class="flex flex-col space-y-1.5">
                         <Label for="email">Email</Label>
                         <Input

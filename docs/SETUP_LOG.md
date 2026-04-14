@@ -668,4 +668,20 @@ Current Version ID: b4037cdf-126d-49c9-86d1-ee3014a0f338
 
 ---
 
+```bash
+MyAuth> npm install resend
+
+added 7 packages, and audited 215 packages in 6s
+
+40 packages are looking for funding
+  run `npm fund` for details
+
+4 moderate severity vulnerabilities
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+```
+
 

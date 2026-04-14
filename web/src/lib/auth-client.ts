@@ -1,4 +1,6 @@
 import { createAuthClient } from "better-auth/vue"
+
 export const authClient = createAuthClient({
-    baseURL: "https://myauth.matsubarasoda.com/" // The base URL of your auth server
+    // 同源策略：前端与 auth API 共享同一个 origin（API 仍挂在 /api/auth/*）
+    baseURL: window.location.origin,
 })
