@@ -59,11 +59,14 @@ async function handleSignIn() {
           <div class="flex flex-col space-y-1.5">
             <div class="flex items-center">
               <Label for="password">Password</Label>
-              <RouterLink to="/auth/forgot-password" class="ml-auto inline-block text-sm hover:underline">
+              <RouterLink
+                to="/auth/forgot-password"
+                class="ml-auto inline-block text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
+              >
                 Forgot your password?
               </RouterLink>
             </div>
-            <Input id="password" v-model="password" type="password" placeholder="Password" />
+            <Input id="password" v-model="password" type="password" />
           </div>
         </div>
       </form>
@@ -75,7 +78,10 @@ async function handleSignIn() {
       </Button>
       <CardDescription>
         Don't have an account?
-        <RouterLink to="/auth/sign-up" class="ml-auto inline-block text-sm underline hover:text-black">
+        <RouterLink
+          to="/auth/sign-up"
+          class="ml-auto inline-block text-sm underline text-muted-foreground transition-colors hover:text-foreground"
+        >
           Sign Up
         </RouterLink>
       </CardDescription>

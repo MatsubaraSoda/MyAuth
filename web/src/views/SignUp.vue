@@ -21,12 +21,20 @@ const router = useRouter()
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 
 // 编写注册函数
 async function handleSignUp() {
     errorMessage.value = ''
+
+    // 前端先做二次密码一致性校验，避免无效请求打到后端
+    if (password.value !== confirmPassword.value) {
+        errorMessage.value = 'Passwords do not match. Please check and try again.'
+        return
+    }
+
     await authClient.signUp.email({
         email: email.value,
         password: password.value,
@@ -40,6 +48,7 @@ async function handleSignUp() {
         }
     })
 }
+
 </script>
 
 <template>
@@ -63,12 +72,27 @@ async function handleSignUp() {
                     <div class="flex flex-col space-y-1.5">
                         <Label for="email">Email</Label>
                         <Input id="email" v-model="email" type="email" placeholder="m@example.com" />
+                        <p class="text-sm text-muted-foreground">
+                            We'll use this to contact you. We will not share your email with anyone else.
+                        </p>
                     </div>
                     <div class="flex flex-col space-y-1.5">
                         <div class="flex items-center">
                             <Label for="password">Password</Label>
                         </div>
-                        <Input id="password" v-model="password" type="password" placeholder="Password" />
+                        <Input id="password" v-model="password" type="password" />
+                        <p class="text-sm text-muted-foreground">
+                            Must be at least 8 characters long.
+                        </p>
+                    </div>
+                    <div class="flex flex-col space-y-1.5">
+                        <div class="flex items-center">
+                            <Label for="confirm-password">Confirm Password</Label>
+                        </div>
+                        <Input id="confirm-password" v-model="confirmPassword" type="password" />
+                        <p class="text-sm text-muted-foreground">
+                            Please confirm your password.
+                        </p>
                     </div>
                 </div>
             </form>
@@ -80,7 +104,10 @@ async function handleSignUp() {
             </Button>
             <CardDescription>
                 Already have an account?
-                <RouterLink to="/auth/sign-in" class="ml-auto inline-block text-sm underline hover:text-black">
+                <RouterLink
+                    to="/auth/sign-in"
+                    class="ml-auto inline-block text-sm underline text-muted-foreground transition-colors hover:text-foreground"
+                >
                     Sign In
                 </RouterLink>
             </CardDescription>
