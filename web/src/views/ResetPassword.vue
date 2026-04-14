@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -13,17 +15,28 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2 } from 'lucide-vue-next'
 
+const route = useRoute()
+const router = useRouter()
+
 const newPassword = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
 const message = ref('')
 const errorMessage = ref('')
+const token = computed(() => {
+  const queryToken = route.query.token
+  return typeof queryToken === 'string' ? queryToken : ''
+})
 
-// 开发阶段占位：先做交互壳，后续再接入真实重置 API
-const onSubmit = () => {
+const onSubmit = async () => {
   if (loading.value) return
   errorMessage.value = ''
   message.value = ''
+
+  if (!token.value) {
+    errorMessage.value = 'INVALID_TOKEN'
+    return
+  }
 
   // 前端先做二次密码一致性校验
   if (newPassword.value !== confirmPassword.value) {
@@ -31,12 +44,20 @@ const onSubmit = () => {
     return
   }
 
-  loading.value = true
-
-  setTimeout(() => {
-    loading.value = false
-    message.value = 'Password reset request submitted.'
-  }, 1200)
+  await authClient.resetPassword({
+    newPassword: newPassword.value,
+    token: token.value,
+  }, {
+    onRequest: () => { loading.value = true },
+    onResponse: () => { loading.value = false },
+    onSuccess: async () => {
+      message.value = 'Password updated. Redirecting to sign in...'
+      await router.push('/auth/sign-in')
+    },
+    onError: (ctx) => {
+      errorMessage.value = ctx.error.message
+    }
+  })
 }
 </script>
 
@@ -51,6 +72,9 @@ const onSubmit = () => {
     <CardContent>
       <form id="reset-password-form" @submit.prevent="onSubmit">
         <div class="grid w-full items-center gap-4">
+          <p v-if="!token" class="text-sm font-medium text-destructive">
+            Invalid or missing reset token.
+          </p>
           <p v-if="errorMessage" class="text-sm font-medium text-destructive">
             {{ errorMessage }}
           </p>
@@ -63,6 +87,7 @@ const onSubmit = () => {
               id="new-password"
               v-model="newPassword"
               type="password"
+              :disabled="loading || !token"
             />
             <p class="text-sm text-muted-foreground">
               Must be at least 8 characters long.
@@ -75,6 +100,7 @@ const onSubmit = () => {
               id="confirm-password"
               v-model="confirmPassword"
               type="password"
+              :disabled="loading || !token"
             />
             <p class="text-sm text-muted-foreground">
               Please re-enter your new password.
@@ -84,7 +110,7 @@ const onSubmit = () => {
       </form>
     </CardContent>
     <CardFooter class="flex flex-col gap-5">
-      <Button class="w-full" type="submit" form="reset-password-form" :disabled="loading">
+      <Button class="w-full" type="submit" form="reset-password-form" :disabled="loading || !token">
         <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
         {{ loading ? 'Saving...' : 'Update password' }}
       </Button>

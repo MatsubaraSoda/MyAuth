@@ -21,7 +21,6 @@ const isSubmitting = ref(false)
 const isSent = ref(false)
 const cooldown = ref(0)
 const errorMessage = ref('')
-const RESET_TEST_RECIPIENT = 'sudacake@outlook.com'
 
 // 倒计时逻辑
 const startCooldown = () => {
@@ -34,7 +33,7 @@ const startCooldown = () => {
     }, 1000)
 }
 
-// 请求 forgot-password（临时联调：统一发到固定测试邮箱）
+// 请求 forgot-password（使用用户输入的真实邮箱）
 const onSubmit = async () => {
     if (!email.value || isSubmitting.value || cooldown.value > 0) return
 
@@ -45,19 +44,19 @@ const onSubmit = async () => {
 
     try {
         const { error } = await authClient.requestPasswordReset({
-            email: RESET_TEST_RECIPIENT,
+            email: email.value,
             redirectTo: `${window.location.origin}/auth/reset-password`,
         })
 
         if (error) {
-            errorMessage.value = error.message || 'Failed to send reset email. Please try again.'
+            errorMessage.value = error.message ?? ''
             return
         }
 
         isSent.value = true
         startCooldown()
-    } catch {
-        errorMessage.value = 'Network error. Please try again.'
+    } catch (err) {
+        errorMessage.value = err instanceof Error ? err.message : ''
     } finally {
         isSubmitting.value = false
     }

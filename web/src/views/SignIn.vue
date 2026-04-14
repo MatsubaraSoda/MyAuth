@@ -57,16 +57,14 @@ async function handleSignIn() {
             <Input id="email" v-model="email" type="email" placeholder="m@example.com" />
           </div>
           <div class="flex flex-col space-y-1.5">
-            <div class="flex items-center">
-              <Label for="password">Password</Label>
-              <RouterLink
-                to="/auth/forgot-password"
-                class="ml-auto inline-block text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
-              >
-                Forgot your password?
-              </RouterLink>
-            </div>
+            <Label for="password">Password</Label>
             <Input id="password" v-model="password" type="password" />
+            <RouterLink
+              to="/auth/forgot-password"
+              class="ml-auto inline-block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
+            >
+              Forgot your password?
+            </RouterLink>
           </div>
         </div>
       </form>

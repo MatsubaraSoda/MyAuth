@@ -99,12 +99,13 @@ router.beforeEach(async (to) => {
   try {
     // 调用 Better Auth 客户端 SDK，验证当前的 Session 状态
     // (这会自动携带浏览器的 HttpOnly Cookie 向你的 Cloudflare 后端发起验证)
-    const { data: session } = await authClient.getSession()
+    const { data } = await authClient.getSession()
+    const hasSession = Boolean(data?.session)
 
-    if (requiresAuth && !session) {
+    if (requiresAuth && !hasSession) {
       // 场景 1: 要去内部系统，但没登录 -> 踢回登录页
       return { name: 'SignIn'}
-    } else if (requiresGuest && session) {
+    } else if (requiresGuest && hasSession) {
       // 场景 2: 要去登录/注册页，但已经登录过了 -> 送去内部系统主页
       return { name: 'Profile' }
     } else {

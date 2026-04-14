@@ -12,9 +12,20 @@ type Bindings = {
 // 2. 实例化 Hono，并注入环境变量类型
 const app = new Hono<{ Bindings: Bindings }>();
 
-// 🌟 【核心修复 1】添加全局 CORS 中间件，必须放在具体路由的前面！
+const PROD_ORIGIN = 'https://account.matsubarasoda.com';
+const LOCAL_ORIGINS = new Set(['http://localhost:5173', 'http://127.0.0.1:5173']);
+
+// 🌟 CORS：线上仅允许生产域名；本地 wrangler dev 允许 5173
 app.use('/api/auth/*', cors({
-  origin: ['http://localhost:5173', 'https://account.matsubarasoda.com'], // 允许你的本地 Vue 跨域访问
+  origin: (origin, c) => {
+    const requestHost = new URL(c.req.url).hostname;
+    const isLocalRuntime = requestHost === 'localhost' || requestHost === '127.0.0.1';
+
+    if (origin === PROD_ORIGIN) return origin;
+    if (isLocalRuntime && origin && LOCAL_ORIGINS.has(origin)) return origin;
+
+    return '';
+  },
   allowMethods: ['POST', 'GET', 'OPTIONS'], // 允许的方法
   allowHeaders: ['Content-Type', 'Authorization'], // 允许的请求头
   credentials: true, // 关键：允许跨域携带 Cookie (Better Auth 必须)

@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/vue"
 
 export const authClient = createAuthClient({
-    // 同源策略：前端与 auth API 共享同一个 origin（API 仍挂在 /api/auth/*）
+    // 统一同源：本地配合 Vite 代理，线上直接走当前域名
     baseURL: window.location.origin,
 })

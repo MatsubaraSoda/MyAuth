@@ -25,8 +25,6 @@ const baseConfig = {
   ],
 } satisfies Partial<BetterAuthOptions>;
 
-const RESET_TEST_RECIPIENT = "sudacake@outlook.com";
-
 function buildAuthWithDatabase(database: ReturnType<typeof drizzleAdapter>) {
   return betterAuth({
     ...baseConfig,
@@ -40,14 +38,14 @@ export function createAuth(env: { DB: any; RESEND_API_KEY: string; ACCOUNT_URL: 
     ...baseConfig,
     emailAndPassword: {
       ...baseConfig.emailAndPassword,
-      // 临时联调策略：无论用户输入什么邮箱，都发送到固定测试邮箱
-      sendResetPassword: async ({ token }) => {
+      // 正式策略：发送到用户请求重置时填写的邮箱
+      sendResetPassword: async ({ user, token }) => {
         await sendResetPasswordEmail({
           env: {
             RESEND_API_KEY: env.RESEND_API_KEY,
             ACCOUNT_URL: env.ACCOUNT_URL,
           },
-          to: RESET_TEST_RECIPIENT,
+          to: user.email,
           token,
         });
       },
