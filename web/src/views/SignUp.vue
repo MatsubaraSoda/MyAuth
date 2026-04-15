@@ -98,7 +98,7 @@ async function handleSignUp() {
             </form>
         </CardContent>
         <CardFooter class="flex flex-col gap-5">
-            <Button class="w-full" type="submit" form="sign-up-form" :disabled="loading">
+            <Button class="w-full cursor-pointer" type="submit" form="sign-up-form" :disabled="loading">
                 <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
                 {{ loading ? 'Creating account...' : 'Create an account' }}
             </Button>
@@ -106,7 +106,7 @@ async function handleSignUp() {
                 Already have an account?
                 <RouterLink
                     to="/auth/sign-in"
-                    class="ml-auto inline-block text-sm underline text-muted-foreground transition-colors hover:text-foreground"
+                    class="ml-auto inline-block cursor-pointer text-sm text-foreground underline transition-colors"
                 >
                     Sign In
                 </RouterLink>

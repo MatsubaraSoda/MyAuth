@@ -110,7 +110,7 @@ const onSubmit = async () => {
       </form>
     </CardContent>
     <CardFooter class="flex flex-col gap-5">
-      <Button class="w-full" type="submit" form="reset-password-form" :disabled="loading || !token">
+      <Button class="w-full cursor-pointer" type="submit" form="reset-password-form" :disabled="loading || !token">
         <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
         {{ loading ? 'Saving...' : 'Update password' }}
       </Button>
@@ -118,7 +118,7 @@ const onSubmit = async () => {
         Remember your password?
         <RouterLink
           to="/auth/sign-in"
-          class="ml-auto inline-block text-sm underline transition-colors hover:text-foreground"
+          class="ml-auto inline-block cursor-pointer text-sm text-foreground underline transition-colors"
         >
           Sign in
         </RouterLink>

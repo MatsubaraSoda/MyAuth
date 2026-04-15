@@ -95,7 +95,7 @@ const onSubmit = async () => {
                     </div>
                 </div>
 
-                <Button type="submit" class="w-full mt-6" :disabled="isSubmitting || !email || cooldown > 0">
+                <Button type="submit" class="mt-6 w-full cursor-pointer" :disabled="isSubmitting || !email || cooldown > 0">
                     <Loader2 v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin" />
                     {{
                         isSubmitting
@@ -112,7 +112,7 @@ const onSubmit = async () => {
             <span>Remember your password?</span>
             <RouterLink
                 to="/auth/sign-in"
-                class="underline transition-colors hover:text-foreground"
+                class="cursor-pointer text-foreground underline transition-colors"
             >
                 Sign in
             </RouterLink>

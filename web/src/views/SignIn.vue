@@ -61,7 +61,7 @@ async function handleSignIn() {
             <Input id="password" v-model="password" type="password" />
             <RouterLink
               to="/auth/forgot-password"
-              class="ml-auto inline-block w-fit text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
+              class="ml-auto inline-block w-fit cursor-pointer text-sm text-foreground transition-colors hover:underline"
             >
               Forgot your password?
             </RouterLink>
@@ -70,7 +70,7 @@ async function handleSignIn() {
       </form>
     </CardContent>
     <CardFooter class="flex flex-col gap-5">
-      <Button class="w-full" type="submit" form="sign-in-form" :disabled="loading">
+      <Button class="w-full cursor-pointer" type="submit" form="sign-in-form" :disabled="loading">
         <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
         {{ loading ? 'Logging in...' : 'Login' }}
       </Button>
@@ -78,7 +78,7 @@ async function handleSignIn() {
         Don't have an account?
         <RouterLink
           to="/auth/sign-up"
-          class="ml-auto inline-block text-sm underline text-muted-foreground transition-colors hover:text-foreground"
+          class="ml-auto inline-block cursor-pointer text-sm text-foreground underline transition-colors"
         >
           Sign Up
         </RouterLink>
