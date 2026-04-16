@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Globe, Sun, Moon, Monitor, LogIn, UserRoundPlus, ChevronDown } from 'lucide-vue-next'
-import { useAppStore } from '@/stores/app'
+import { Languages, Palette, Sun, Moon, Monitor, LogIn, UserRoundPlus, ChevronDown } from 'lucide-vue-next'
+import { useAppStore, PALETTE_OPTIONS } from '@/stores/app'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +59,9 @@ const isNotebooksOpen = ref(false)
         <DropdownMenuTrigger as-child>
           <button class="flex w-full cursor-pointer items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors">
             <div class="flex items-center gap-2">
-              <Globe class="h-4 w-4" /> 
+              <span class="flex w-10 shrink-0 items-center justify-center">
+                <Languages class="h-4 w-4" />
+              </span>
               {{ appStore.language }}
             </div>
             <ChevronDown class="h-4 w-4 opacity-50" />
@@ -71,11 +73,49 @@ const isNotebooksOpen = ref(false)
           class="w-(--reka-dropdown-menu-trigger-width)"
         >
           <DropdownMenuItem
-            class="cursor-pointer"
+            class="cursor-pointer whitespace-nowrap px-2 gap-2"
             @click="appStore.setLanguage('English')"
             :class="{ 'bg-accent text-accent-foreground font-medium': appStore.language === 'English' }"
           >
+            <span class="flex w-10 shrink-0 items-center justify-center">
+              <span class="inline-flex rounded-sm border border-border/60 px-1 text-[10px] font-semibold leading-4 tracking-wide whitespace-nowrap">EN</span>
+            </span>
             English
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <button class="flex w-full cursor-pointer items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="flex w-10 shrink-0 items-center justify-center">
+                <Palette class="h-4 w-4" />
+              </span>
+              {{ PALETTE_OPTIONS.find((o) => o.value === appStore.palette)?.label ?? 'Shadcn Neutral' }}
+            </div>
+            <ChevronDown class="h-4 w-4 opacity-50" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          side="top"
+          align="end"
+          class="w-(--reka-dropdown-menu-trigger-width)"
+        >
+          <DropdownMenuItem
+            v-for="opt in PALETTE_OPTIONS"
+            :key="opt.value"
+            class="cursor-pointer whitespace-nowrap px-2 gap-2"
+            @click="appStore.setPalette(opt.value)"
+            :class="{ 'bg-accent text-accent-foreground font-medium': appStore.palette === opt.value }"
+          >
+            <span class="flex w-10 shrink-0 items-center justify-center">
+              <span
+                class="size-2.5 rounded-full border border-border/60"
+                :style="{ backgroundColor: `var(${opt.swatchVar})` }"
+              />
+            </span>
+            {{ opt.label }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -84,10 +124,11 @@ const isNotebooksOpen = ref(false)
         <button v-for="m in (['light', 'dark', 'system'] as const)" 
           :key="m"
           @click="appStore.setMode(m)"
-          class="inline-flex cursor-pointer justify-center rounded-md border p-2 transition-all"
+          type="button"
+          class="inline-flex cursor-pointer justify-center rounded-md border border-border p-2 transition-colors"
           :class="{ 
-            'bg-foreground text-background shadow-md': appStore.mode === m, 
-            'hover:bg-accent text-muted-foreground': appStore.mode !== m 
+            'border-primary bg-primary text-primary-foreground font-semibold shadow-sm': appStore.mode === m, 
+            'bg-background text-muted-foreground hover:bg-accent/80 hover:text-accent-foreground': appStore.mode !== m 
           }"
         >
           <component :is="m === 'light' ? Sun : m === 'dark' ? Moon : Monitor" class="h-4 w-4" />
@@ -105,3 +146,18 @@ const isNotebooksOpen = ref(false)
     </div>
   </div>
 </template>
+
+<style scoped>
+/*
+ * Alignment note (handover guard):
+ * - Language/Palette dropdown items intentionally use `px-2` (not `px-3`) in template classes.
+ * - Reason: with shared leading slot width (`w-10`), `px-3` made item content appear slightly right-shifted
+ *   relative to trigger rows. `px-2` visually aligns trigger/item baselines in current UI.
+ * - Layout contract between trigger and item:
+ *   1) Trigger rows: left block = `[leading slot w-10] + [label]`, right block = chevron.
+ *   2) Dropdown items: left block = `[leading slot w-10] + [label]`, no chevron block.
+ *   3) Both sides share the same leading slot width (`w-10`) so icon/code/dot starts from one reference line.
+ *   4) Item horizontal inset uses `px-2` to compensate for dropdown item default box model and keep text start aligned.
+ * - If future spacing tokens or dropdown primitives change, re-verify this alignment before reverting.
+ */
+</style>

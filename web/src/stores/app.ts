@@ -3,14 +3,37 @@ import { defineStore } from 'pinia'
 
 type Mode = 'light' | 'dark' | 'system'
 type Language = 'English'
+export type Palette = 'shadcn-neutral' | 'terminal-dark-ru'
+
+/** UI labels for palette dropdowns (single source). */
+export const PALETTE_OPTIONS: {
+  value: Palette
+  label: string
+  swatchVar: '--palette-swatch-shadcn-neutral' | '--palette-swatch-terminal-dark-ru'
+}[] = [
+  { value: 'shadcn-neutral', label: 'Shadcn Neutral', swatchVar: '--palette-swatch-shadcn-neutral' },
+  { value: 'terminal-dark-ru', label: 'Terminal Dark RU', swatchVar: '--palette-swatch-terminal-dark-ru' },
+]
 
 const STORAGE_MODE_KEY = 'app-mode'
 const STORAGE_LANG_KEY = 'app-language'
+const STORAGE_PALETTE_KEY = 'app-palette'
 let systemModeMediaQuery: MediaQueryList | null = null
 type ViewTransitionDocument = Document & {
   startViewTransition?: (updateCallback: () => void | Promise<void>) => {
     finished: Promise<void>
   }
+}
+
+function applyPaletteToDocument(palette: Palette) {
+  if (typeof window === 'undefined') return
+
+  const root = document.documentElement
+  if (palette === 'shadcn-neutral') {
+    root.removeAttribute('data-theme')
+    return
+  }
+  root.dataset.theme = 'terminal-dark-ru'
 }
 
 function applyModeToDocument(mode: Mode) {
@@ -48,6 +71,7 @@ function bindSystemModeListener(onChange: () => void) {
 export const useAppStore = defineStore('app', () => {
   const mode = ref<Mode>('system')
   const language = ref<Language>('English')
+  const palette = ref<Palette>('shadcn-neutral')
   
   const syncModeWithSystem = () => {
     if (mode.value === 'system') {
@@ -59,6 +83,7 @@ export const useAppStore = defineStore('app', () => {
   if (typeof window !== 'undefined') {
     const savedMode = window.localStorage.getItem(STORAGE_MODE_KEY) as Mode | null
     const savedLanguage = window.localStorage.getItem(STORAGE_LANG_KEY) as Language | null
+    const savedPalette = window.localStorage.getItem(STORAGE_PALETTE_KEY) as Palette | null
 
     if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system') {
       mode.value = savedMode
@@ -69,6 +94,11 @@ export const useAppStore = defineStore('app', () => {
       language.value = savedLanguage
     }
 
+    if (savedPalette === 'shadcn-neutral' || savedPalette === 'terminal-dark-ru') {
+      palette.value = savedPalette
+    }
+
+    applyPaletteToDocument(palette.value)
     applyModeToDocument(mode.value)
     bindSystemModeListener(syncModeWithSystem)
   }
@@ -101,10 +131,20 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  function setPalette(next: Palette) {
+    palette.value = next
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_PALETTE_KEY, next)
+    }
+    applyPaletteToDocument(next)
+  }
+
   return {
     mode,
     language,
+    palette,
     setMode,
     setLanguage,
+    setPalette,
   }
 })
