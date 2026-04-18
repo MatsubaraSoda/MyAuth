@@ -40,3 +40,4 @@ __screenshots__/
 
 # IDE
 .vscode
+.cursor

@@ -3,7 +3,7 @@ description: Git 中文提交 UTF-8、分支与基线 tag、Agent 不写远端
 alwaysApply: true
 ---
 
-# Git 约定（SeaTide）
+# Git 约定
 
 ## 中文提交与 UTF-8（最重要）
 

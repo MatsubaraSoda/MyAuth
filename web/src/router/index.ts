@@ -8,6 +8,12 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, _from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash)
+      return { el: to.hash, behavior: 'smooth', top: 0 }
+    return { top: 0 }
+  },
   routes: [
     // ==========================================
     // 🔒 内部系统 (Protected Routes)
@@ -77,9 +83,9 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      // 这里你可以临时指向随便一个页面，或者之后建个 NotFound.vue
-      redirect: '/' 
-    }
+      component: () => import('@/views/NotFound.vue'),
+      meta: { requiresAuth: false, requiresGuest: false },
+    },
   ]
 })
 

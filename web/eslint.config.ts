@@ -20,4 +20,18 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
+
+  // shadcn-vue / Reka UI 惯例为单词文件名（Button.vue、Card.vue）；路由视图也常为单词（Profile.vue）。
+  // 仅放宽命名规则，不改业务组件。
+  {
+    name: 'app/single-word-vue-filenames',
+    files: [
+      '**/components/ui/**/*.vue',
+      '**/components/common/**/*.vue',
+      '**/views/**/*.vue',
+    ],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
 )

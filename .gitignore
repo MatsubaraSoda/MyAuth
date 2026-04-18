@@ -34,3 +34,7 @@ lerna-debug.log*
 
 # github
 .github
+
+# IDE
+.vscode
+.cursor
