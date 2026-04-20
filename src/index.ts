@@ -7,6 +7,8 @@ type Bindings = {
   DB: D1Database;
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
 };
 
 // 2. 实例化 Hono，并注入环境变量类型

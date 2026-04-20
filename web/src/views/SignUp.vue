@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authClient } from '@/lib/auth-client'
-import { Loader2 } from 'lucide-vue-next'
+import { Github, Loader2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
     Card,
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 
 const router = useRouter()
 
@@ -23,6 +24,7 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const loading = ref(false)
+const socialLoading = ref(false)
 const errorMessage = ref('')
 
 // 编写注册函数
@@ -43,6 +45,20 @@ async function handleSignUp() {
         onRequest: () => { loading.value = true },
         onResponse: () => { loading.value = false },
         onSuccess: () => { router.push('/profile') },
+        onError: (ctx) => {
+            errorMessage.value = ctx.error.message
+        }
+    })
+}
+
+async function handleGithubSignIn() {
+    errorMessage.value = ''
+    await authClient.signIn.social({
+        provider: 'github',
+        callbackURL: '/profile',
+    }, {
+        onRequest: () => { socialLoading.value = true },
+        onResponse: () => { socialLoading.value = false },
         onError: (ctx) => {
             errorMessage.value = ctx.error.message
         }
@@ -98,7 +114,26 @@ async function handleSignUp() {
             </form>
         </CardContent>
         <CardFooter class="flex flex-col gap-5">
-            <Button class="w-full cursor-pointer" type="submit" form="sign-up-form" :disabled="loading">
+            <Button
+                class="w-full cursor-pointer"
+                type="button"
+                variant="outline"
+                :disabled="loading || socialLoading"
+                @click="handleGithubSignIn"
+            >
+                <Loader2 v-if="socialLoading" class="mr-2 h-4 w-4 animate-spin" />
+                <Github v-else class="mr-2 h-4 w-4" />
+                Continue with GitHub
+            </Button>
+            <div class="relative w-full">
+                <Separator />
+                <span
+                    class="bg-card text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs"
+                >
+                    OR
+                </span>
+            </div>
+            <Button class="w-full cursor-pointer" type="submit" form="sign-up-form" :disabled="loading || socialLoading">
                 <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
                 {{ loading ? 'Creating account...' : 'Create an account' }}
             </Button>

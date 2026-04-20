@@ -18,3 +18,17 @@ export const authBaseConfig = {
     "https://account.matsubarasoda.com",
   ],
 } satisfies Partial<BetterAuthOptions>;
+
+export type GithubOAuthEnv = {
+  GITHUB_CLIENT_ID: string;
+  GITHUB_CLIENT_SECRET: string;
+};
+
+export function createGithubSocialProvidersConfig(env: GithubOAuthEnv) {
+  return {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+    },
+  } satisfies NonNullable<BetterAuthOptions["socialProviders"]>;
+}

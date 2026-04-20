@@ -3,13 +3,17 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
 import { sendResetPasswordEmail } from "./mailer";
-import { authBaseConfig } from "./auth.shared";
+import {
+  authBaseConfig,
+  createGithubSocialProvidersConfig,
+  type GithubOAuthEnv,
+} from "./auth.shared";
 
 type RuntimeEnv = {
   DB: any;
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
-};
+} & GithubOAuthEnv;
 
 let cachedRuntimeAuth: ReturnType<typeof buildRuntimeAuth> | null = null;
 let cachedRuntimeDb: unknown = null;
@@ -17,6 +21,7 @@ let cachedRuntimeDb: unknown = null;
 function buildRuntimeAuth(env: RuntimeEnv) {
   return betterAuth({
     ...authBaseConfig,
+    socialProviders: createGithubSocialProvidersConfig(env),
     emailAndPassword: {
       ...authBaseConfig.emailAndPassword,
       // 正式策略：发送到用户请求重置时填写的邮箱
