@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { LOCALE_OPTIONS } from '@/locales'
 import { useAppStore, PALETTE_OPTIONS } from '@/stores/app'
 
 const appStore = useAppStore()
@@ -23,12 +24,14 @@ const appStore = useAppStore()
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" class="w-auto min-w-max">
         <DropdownMenuItem
+          v-for="loc in LOCALE_OPTIONS"
+          :key="loc.value"
           class="cursor-pointer whitespace-nowrap"
-          @click="appStore.setLanguage('English')"
-          :class="{ 'bg-accent text-accent-foreground font-medium': appStore.language === 'English' }"
+          @click="appStore.setLanguage(loc.value)"
+          :class="{ 'bg-accent text-accent-foreground font-medium': appStore.language === loc.value }"
         >
-          <span class="mr-2 inline-flex min-w-6 justify-center rounded-sm border border-border/60 px-1 text-[10px] font-semibold leading-4 tracking-wide">EN</span>
-          English
+          <span class="mr-2 inline-flex min-w-6 justify-center rounded-sm border border-border/60 px-1 text-[10px] font-semibold leading-4 tracking-wide">{{ loc.code }}</span>
+          {{ loc.label }}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

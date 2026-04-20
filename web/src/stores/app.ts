@@ -1,8 +1,9 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
+import { applyI18nLocale, type AppLocale, DEFAULT_LOCALE } from '@/locales'
+
 type Mode = 'light' | 'dark' | 'system'
-type Language = 'English'
 export type Palette = 'shadcn-neutral' | 'terminal-dark-ru'
 
 /** UI labels for palette dropdowns (single source). */
@@ -22,6 +23,31 @@ let systemModeMediaQuery: MediaQueryList | null = null
 type ViewTransitionDocument = Document & {
   startViewTransition?: (updateCallback: () => void | Promise<void>) => {
     finished: Promise<void>
+  }
+}
+
+function readStoredLocale(): AppLocale | null {
+  if (typeof window === 'undefined') return null
+  const raw = window.localStorage.getItem(STORAGE_LANG_KEY)
+  if (raw === 'en' || raw === 'zh-CN') return raw
+  if (raw === 'English') return 'en'
+  return null
+}
+
+function localeFromBrowserDefault(): AppLocale {
+  if (typeof navigator === 'undefined') return DEFAULT_LOCALE
+  return navigator.language.toLowerCase().startsWith('zh') ? 'zh-CN' : DEFAULT_LOCALE
+}
+
+/** 首次进入：有合法持久化则用持久化，否则用语种/默认 */
+function resolveInitialLocale(): AppLocale {
+  return readStoredLocale() ?? localeFromBrowserDefault()
+}
+
+function migrateLegacyLanguageInStorage(): void {
+  if (typeof window === 'undefined') return
+  if (window.localStorage.getItem(STORAGE_LANG_KEY) === 'English') {
+    window.localStorage.setItem(STORAGE_LANG_KEY, 'en')
   }
 }
 
@@ -70,9 +96,9 @@ function bindSystemModeListener(onChange: () => void) {
 
 export const useAppStore = defineStore('app', () => {
   const mode = ref<Mode>('system')
-  const language = ref<Language>('English')
+  const language = ref<AppLocale>(resolveInitialLocale())
   const palette = ref<Palette>('shadcn-neutral')
-  
+
   const syncModeWithSystem = () => {
     if (mode.value === 'system') {
       applyModeToDocument('system')
@@ -81,17 +107,13 @@ export const useAppStore = defineStore('app', () => {
 
   // 初始化本地持久化状态
   if (typeof window !== 'undefined') {
+    migrateLegacyLanguageInStorage()
+
     const savedMode = window.localStorage.getItem(STORAGE_MODE_KEY) as Mode | null
-    const savedLanguage = window.localStorage.getItem(STORAGE_LANG_KEY) as Language | null
     const savedPalette = window.localStorage.getItem(STORAGE_PALETTE_KEY) as Palette | null
 
     if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system') {
       mode.value = savedMode
-    }
-
-    // 仅保留 English 的校验
-    if (savedLanguage === 'English') {
-      language.value = savedLanguage
     }
 
     if (savedPalette === 'shadcn-neutral' || savedPalette === 'terminal-dark-ru') {
@@ -124,11 +146,12 @@ export const useAppStore = defineStore('app', () => {
     })
   }
 
-  function setLanguage(next: Language) {
+  function setLanguage(next: AppLocale) {
     language.value = next
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(STORAGE_LANG_KEY, next)
     }
+    applyI18nLocale(next)
   }
 
   function setPalette(next: Palette) {

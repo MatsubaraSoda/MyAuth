@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Languages, Palette, Sun, Moon, Monitor, LogIn, UserRoundPlus, ChevronDown } from 'lucide-vue-next'
+import { LOCALE_OPTIONS } from '@/locales'
 import { useAppStore, PALETTE_OPTIONS } from '@/stores/app'
 import {
   DropdownMenu,
@@ -62,7 +63,7 @@ const isNotebooksOpen = ref(false)
               <span class="flex w-10 shrink-0 items-center justify-center">
                 <Languages class="h-4 w-4" />
               </span>
-              {{ appStore.language }}
+              {{ LOCALE_OPTIONS.find((o) => o.value === appStore.language)?.label ?? appStore.language }}
             </div>
             <ChevronDown class="h-4 w-4 opacity-50" />
           </button>
@@ -73,14 +74,16 @@ const isNotebooksOpen = ref(false)
           class="w-(--reka-dropdown-menu-trigger-width)"
         >
           <DropdownMenuItem
+            v-for="loc in LOCALE_OPTIONS"
+            :key="loc.value"
             class="cursor-pointer whitespace-nowrap px-2 gap-2"
-            @click="appStore.setLanguage('English')"
-            :class="{ 'bg-accent text-accent-foreground font-medium': appStore.language === 'English' }"
+            @click="appStore.setLanguage(loc.value)"
+            :class="{ 'bg-accent text-accent-foreground font-medium': appStore.language === loc.value }"
           >
             <span class="flex w-10 shrink-0 items-center justify-center">
-              <span class="inline-flex rounded-sm border border-border/60 px-1 text-[10px] font-semibold leading-4 tracking-wide whitespace-nowrap">EN</span>
+              <span class="inline-flex rounded-sm border border-border/60 px-1 text-[10px] font-semibold leading-4 tracking-wide whitespace-nowrap">{{ loc.code }}</span>
             </span>
-            English
+            {{ loc.label }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
