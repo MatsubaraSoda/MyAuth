@@ -83,11 +83,27 @@ async function handleGithubSignIn() {
                     </p>
                     <div class="flex flex-col space-y-1.5">
                         <Label for="name">Name</Label>
-                        <Input id="name" v-model="name" type="text" placeholder="Name" />
+                        <Input
+                            id="name"
+                            v-model="name"
+                            name="name"
+                            type="text"
+                            autocomplete="name"
+                            placeholder="Name"
+                            required
+                        />
                     </div>
                     <div class="flex flex-col space-y-1.5">
                         <Label for="email">Email</Label>
-                        <Input id="email" v-model="email" type="email" placeholder="m@example.com" />
+                        <Input
+                            id="email"
+                            v-model="email"
+                            name="email"
+                            type="email"
+                            autocomplete="email"
+                            placeholder="m@example.com"
+                            required
+                        />
                         <p class="text-sm text-muted-foreground">
                             We'll use this to contact you. We will not share your email with anyone else.
                         </p>
@@ -96,7 +112,14 @@ async function handleGithubSignIn() {
                         <div class="flex items-center">
                             <Label for="password">Password</Label>
                         </div>
-                        <Input id="password" v-model="password" type="password" />
+                        <Input
+                            id="password"
+                            v-model="password"
+                            name="password"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                        />
                         <p class="text-sm text-muted-foreground">
                             Must be at least 8 characters long.
                         </p>
@@ -105,7 +128,14 @@ async function handleGithubSignIn() {
                         <div class="flex items-center">
                             <Label for="confirm-password">Confirm Password</Label>
                         </div>
-                        <Input id="confirm-password" v-model="confirmPassword" type="password" />
+                        <Input
+                            id="confirm-password"
+                            v-model="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                        />
                         <p class="text-sm text-muted-foreground">
                             Please confirm your password.
                         </p>
@@ -114,6 +144,20 @@ async function handleGithubSignIn() {
             </form>
         </CardContent>
         <CardFooter class="flex flex-col gap-5">
+            <Button class="w-full cursor-pointer" type="submit" form="sign-up-form" :disabled="loading || socialLoading">
+                <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+                {{ loading ? 'Creating account...' : 'Create an account' }}
+            </Button>
+            
+            <div class="relative w-full">
+                <Separator />
+                <span
+                    class="bg-card text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs"
+                >
+                    OR
+                </span>
+            </div>
+            
             <Button
                 class="w-full cursor-pointer"
                 type="button"
@@ -124,18 +168,6 @@ async function handleGithubSignIn() {
                 <Loader2 v-if="socialLoading" class="mr-2 h-4 w-4 animate-spin" />
                 <Github v-else class="mr-2 h-4 w-4" />
                 Continue with GitHub
-            </Button>
-            <div class="relative w-full">
-                <Separator />
-                <span
-                    class="bg-card text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs"
-                >
-                    OR
-                </span>
-            </div>
-            <Button class="w-full cursor-pointer" type="submit" form="sign-up-form" :disabled="loading || socialLoading">
-                <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
-                {{ loading ? 'Creating account...' : 'Create an account' }}
             </Button>
             <CardDescription>
                 Already have an account?

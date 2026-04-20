@@ -86,7 +86,10 @@ const onSubmit = async () => {
             <Input
               id="new-password"
               v-model="newPassword"
+              name="newPassword"
               type="password"
+              autocomplete="new-password"
+              required
               :disabled="loading || !token"
             />
             <p class="text-sm text-muted-foreground">
@@ -99,7 +102,10 @@ const onSubmit = async () => {
             <Input
               id="confirm-password"
               v-model="confirmPassword"
+              name="confirmPassword"
               type="password"
+              autocomplete="new-password"
+              required
               :disabled="loading || !token"
             />
             <p class="text-sm text-muted-foreground">

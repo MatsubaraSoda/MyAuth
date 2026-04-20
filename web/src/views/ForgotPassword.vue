@@ -87,7 +87,9 @@ const onSubmit = async () => {
                         <Input
                             id="email"
                             v-model="email"
+                            name="email"
                             type="email"
+                            autocomplete="email"
                             placeholder="m@example.com"
                             required
                             :disabled="isSubmitting"
