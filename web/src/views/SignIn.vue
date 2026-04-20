@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authClient } from '@/lib/auth-client'
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 
+const { t } = useI18n()
 const router = useRouter()
 
 const email = ref('')
@@ -57,9 +59,9 @@ async function handleGithubSignIn() {
 <template>
   <Card class="w-full max-w-sm">
     <CardHeader>
-      <CardTitle class="text-lg">Sign In</CardTitle>
+      <CardTitle class="text-lg">{{ t('auth.sign_in.title_page') }}</CardTitle>
       <CardDescription>
-        Enter your email below to login to your account
+        {{ t('auth.sign_in.msg_intro') }}
       </CardDescription>
     </CardHeader>
     <CardContent>
@@ -69,19 +71,19 @@ async function handleGithubSignIn() {
             {{ errorMessage }}
           </p>
           <div class="flex flex-col space-y-1.5">
-            <Label for="email">Email</Label>
+            <Label for="email">{{ t('auth.sign_in.label_email') }}</Label>
             <Input
               id="email"
               v-model="email"
               name="email"
               type="email"
               autocomplete="email"
-              placeholder="m@example.com"
+              :placeholder="t('auth.sign_in.ph_email')"
               required
             />
           </div>
           <div class="flex flex-col space-y-1.5">
-            <Label for="password">Password</Label>
+            <Label for="password">{{ t('auth.sign_in.label_password') }}</Label>
             <Input
               id="password"
               v-model="password"
@@ -94,7 +96,7 @@ async function handleGithubSignIn() {
               to="/auth/forgot-password"
               class="ml-auto inline-block w-fit cursor-pointer text-sm text-foreground transition-colors hover:underline"
             >
-              Forgot your password?
+              {{ t('auth.sign_in.link_forgot_pwd') }}
             </RouterLink>
           </div>
         </div>
@@ -103,14 +105,14 @@ async function handleGithubSignIn() {
     <CardFooter class="flex flex-col gap-5">
       <Button class="w-full cursor-pointer" type="submit" form="sign-in-form" :disabled="loading || socialLoading">
         <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
-        {{ loading ? 'Logging in...' : 'Login' }}
+        {{ loading ? t('auth.sign_in.btn_submit_loading') : t('auth.sign_in.btn_submit') }}
       </Button>
       <div class="relative w-full">
         <Separator />
         <span
           class="bg-card text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs"
         >
-          OR
+          {{ t('auth.sign_in.msg_or') }}
         </span>
       </div>
       <Button
@@ -122,15 +124,15 @@ async function handleGithubSignIn() {
       >
         <Loader2 v-if="socialLoading" class="mr-2 h-4 w-4 animate-spin" />
         <Github v-else class="mr-2 h-4 w-4" />
-        Continue with GitHub
+        {{ t('auth.sign_in.btn_github') }}
       </Button>
       <CardDescription>
-        Don't have an account?
+        {{ t('auth.sign_in.msg_no_account') }}
         <RouterLink
           to="/auth/sign-up"
           class="ml-auto inline-block cursor-pointer text-sm text-foreground underline transition-colors"
         >
-          Sign Up
+          {{ t('auth.sign_in.link_sign_up') }}
         </RouterLink>
       </CardDescription>
     </CardFooter>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
@@ -12,8 +13,9 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-// 引入图标以增强 UX，如果没有安装可以直接 npm install lucide-vue-next
 import { Loader2 } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const email = ref('')
 const sentEmail = ref('')
@@ -22,7 +24,6 @@ const isSent = ref(false)
 const cooldown = ref(0)
 const errorMessage = ref('')
 
-// 倒计时逻辑
 const startCooldown = () => {
     cooldown.value = 60
     const timer = setInterval(() => {
@@ -33,11 +34,9 @@ const startCooldown = () => {
     }, 1000)
 }
 
-// 请求 forgot-password（使用用户输入的真实邮箱）
 const onSubmit = async () => {
     if (!email.value || isSubmitting.value || cooldown.value > 0) return
 
-    // 在点击发送时冻结本次邮箱展示文案，直到下一次真正发送
     sentEmail.value = email.value
     errorMessage.value = ''
     isSubmitting.value = true
@@ -67,13 +66,12 @@ const onSubmit = async () => {
 <template>
     <Card class="w-full max-w-sm">
         <CardHeader>
-            <CardTitle class="text-xl">Forgot Password</CardTitle>
+            <CardTitle class="text-xl">{{ t('auth.forgot_pwd.title_page') }}</CardTitle>
             <CardDescription>
-                Enter your email address and we'll send you a link to reset your password.
+                {{ t('auth.forgot_pwd.msg_instructions') }}
             </CardDescription>
             <CardDescription v-if="isSent">
-                If an account exists for <span class="font-medium text-foreground">{{ sentEmail }}</span>,
-                we've sent a password reset link.
+                {{ t('auth.forgot_pwd.msg_sent_after_send', { email: sentEmail }) }}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -83,14 +81,14 @@ const onSubmit = async () => {
                         {{ errorMessage }}
                     </p>
                     <div class="flex flex-col space-y-1.5">
-                        <Label for="email">Email</Label>
+                        <Label for="email">{{ t('auth.forgot_pwd.label_email') }}</Label>
                         <Input
                             id="email"
                             v-model="email"
                             name="email"
                             type="email"
                             autocomplete="email"
-                            placeholder="m@example.com"
+                            :placeholder="t('auth.forgot_pwd.ph_email')"
                             required
                             :disabled="isSubmitting"
                         />
@@ -101,22 +99,22 @@ const onSubmit = async () => {
                     <Loader2 v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin" />
                     {{
                         isSubmitting
-                            ? 'Sending...'
+                            ? t('auth.forgot_pwd.btn_send_loading')
                             : cooldown > 0
-                                ? `Resend available in ${cooldown}s`
-                                : 'Send reset link'
+                                ? t('auth.forgot_pwd.msg_resend_in', { seconds: cooldown })
+                                : t('auth.forgot_pwd.btn_send')
                     }}
                 </Button>
             </form>
         </CardContent>
 
         <CardFooter class="flex justify-center gap-1 pt-2 pb-6 text-sm text-muted-foreground">
-            <span>Remember your password?</span>
+            <span>{{ t('auth.forgot_pwd.msg_remember') }}</span>
             <RouterLink
                 to="/auth/sign-in"
                 class="cursor-pointer text-foreground underline transition-colors"
             >
-                Sign in
+                {{ t('auth.forgot_pwd.link_sign_in') }}
             </RouterLink>
         </CardFooter>
     </Card>

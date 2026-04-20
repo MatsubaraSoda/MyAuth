@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authClient } from '@/lib/auth-client'
@@ -16,9 +17,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 
+const { t } = useI18n()
 const router = useRouter()
 
-// 定义表单数据
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -27,13 +28,11 @@ const loading = ref(false)
 const socialLoading = ref(false)
 const errorMessage = ref('')
 
-// 编写注册函数
 async function handleSignUp() {
     errorMessage.value = ''
 
-    // 前端先做二次密码一致性校验，避免无效请求打到后端
     if (password.value !== confirmPassword.value) {
-        errorMessage.value = 'Passwords do not match. Please check and try again.'
+        errorMessage.value = t('auth.sign_up.err_pwd_mismatch')
         return
     }
 
@@ -70,9 +69,9 @@ async function handleGithubSignIn() {
 <template>
     <Card class="w-full max-w-sm">
         <CardHeader>
-            <CardTitle class="text-lg">Sign Up</CardTitle>
+            <CardTitle class="text-lg">{{ t('auth.sign_up.title_page') }}</CardTitle>
             <CardDescription>
-                Enter your information to create an account
+                {{ t('auth.sign_up.msg_intro') }}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -82,35 +81,35 @@ async function handleGithubSignIn() {
                         {{ errorMessage }}
                     </p>
                     <div class="flex flex-col space-y-1.5">
-                        <Label for="name">Name</Label>
+                        <Label for="name">{{ t('auth.sign_up.label_name') }}</Label>
                         <Input
                             id="name"
                             v-model="name"
                             name="name"
                             type="text"
                             autocomplete="name"
-                            placeholder="Name"
+                            :placeholder="t('auth.sign_up.ph_name')"
                             required
                         />
                     </div>
                     <div class="flex flex-col space-y-1.5">
-                        <Label for="email">Email</Label>
+                        <Label for="email">{{ t('auth.sign_up.label_email') }}</Label>
                         <Input
                             id="email"
                             v-model="email"
                             name="email"
                             type="email"
                             autocomplete="email"
-                            placeholder="m@example.com"
+                            :placeholder="t('auth.sign_up.ph_email')"
                             required
                         />
                         <p class="text-sm text-muted-foreground">
-                            We'll use this to contact you. We will not share your email with anyone else.
+                            {{ t('auth.sign_up.msg_email_privacy') }}
                         </p>
                     </div>
                     <div class="flex flex-col space-y-1.5">
                         <div class="flex items-center">
-                            <Label for="password">Password</Label>
+                            <Label for="password">{{ t('auth.sign_up.label_password') }}</Label>
                         </div>
                         <Input
                             id="password"
@@ -121,12 +120,12 @@ async function handleGithubSignIn() {
                             required
                         />
                         <p class="text-sm text-muted-foreground">
-                            Must be at least 8 characters long.
+                            {{ t('auth.sign_up.msg_password_hint') }}
                         </p>
                     </div>
                     <div class="flex flex-col space-y-1.5">
                         <div class="flex items-center">
-                            <Label for="confirm-password">Confirm Password</Label>
+                            <Label for="confirm-password">{{ t('auth.sign_up.label_password_confirm') }}</Label>
                         </div>
                         <Input
                             id="confirm-password"
@@ -137,7 +136,7 @@ async function handleGithubSignIn() {
                             required
                         />
                         <p class="text-sm text-muted-foreground">
-                            Please confirm your password.
+                            {{ t('auth.sign_up.msg_confirm_hint') }}
                         </p>
                     </div>
                 </div>
@@ -146,18 +145,18 @@ async function handleGithubSignIn() {
         <CardFooter class="flex flex-col gap-5">
             <Button class="w-full cursor-pointer" type="submit" form="sign-up-form" :disabled="loading || socialLoading">
                 <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
-                {{ loading ? 'Creating account...' : 'Create an account' }}
+                {{ loading ? t('auth.sign_up.btn_submit_loading') : t('auth.sign_up.btn_submit') }}
             </Button>
-            
+
             <div class="relative w-full">
                 <Separator />
                 <span
                     class="bg-card text-muted-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-2 text-xs"
                 >
-                    OR
+                    {{ t('auth.sign_up.msg_or') }}
                 </span>
             </div>
-            
+
             <Button
                 class="w-full cursor-pointer"
                 type="button"
@@ -167,15 +166,15 @@ async function handleGithubSignIn() {
             >
                 <Loader2 v-if="socialLoading" class="mr-2 h-4 w-4 animate-spin" />
                 <Github v-else class="mr-2 h-4 w-4" />
-                Continue with GitHub
+                {{ t('auth.sign_up.btn_github') }}
             </Button>
             <CardDescription>
-                Already have an account?
+                {{ t('auth.sign_up.msg_has_account') }}
                 <RouterLink
                     to="/auth/sign-in"
                     class="ml-auto inline-block cursor-pointer text-sm text-foreground underline transition-colors"
                 >
-                    Sign In
+                    {{ t('auth.sign_up.link_sign_in') }}
                 </RouterLink>
             </CardDescription>
         </CardFooter>

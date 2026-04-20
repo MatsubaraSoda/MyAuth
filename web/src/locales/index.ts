@@ -9,13 +9,10 @@ export const SUPPORTED_LOCALES: readonly AppLocale[] = ['en', 'zh-CN'] as const
 /** Pinia 无持久化记录时的默认语言（与业务约定一致时可改） */
 export const DEFAULT_LOCALE: AppLocale = 'en'
 
-export const LOCALE_OPTIONS: {
-  value: AppLocale
-  label: string
-  code: string
-}[] = [
-  { value: 'en', label: 'English', code: 'EN' },
-  { value: 'zh-CN', label: '简体中文', code: '简' },
+/** 语言切换 UI：badge 为 locale 代码（en / zh-CN），展示名称见 i18n `layout.label_locale_*` */
+export const LOCALE_OPTIONS: { value: AppLocale; code: string }[] = [
+  { value: 'en', code: 'en' },
+  { value: 'zh-CN', code: 'zh-CN' },
 ]
 
 export const i18n = createI18n({

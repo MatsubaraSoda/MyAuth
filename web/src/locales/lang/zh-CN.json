@@ -2,5 +2,87 @@
   "common": {
     "appName": "MyAuth",
     "loading": "加载中…"
+  },
+  "layout": {
+    "aria_nav_main": "主导航",
+    "aria_menu": "菜单",
+    "title_brand": "松原苏打",
+    "title_notebooks": "笔记本",
+    "label_subject_math": "数学",
+    "label_subject_physics": "物理",
+    "label_subject_chemistry": "化学",
+    "aria_language": "语言",
+    "aria_palette": "Color palette",
+    "aria_theme": "颜色模式",
+    "label_theme_light": "浅色",
+    "label_theme_dark": "深色",
+    "label_theme_system": "跟随系统",
+    "btn_sign_in": "登录",
+    "btn_sign_up": "注册",
+    "label_locale_en": "English",
+    "label_locale_zh_CN": "简体中文"
+  },
+  "auth": {
+    "sign_in": {
+      "title_page": "登录",
+      "msg_intro": "在下方输入邮箱以登录账户",
+      "label_email": "邮箱",
+      "label_password": "密码",
+      "ph_email": "m{'@'}example.com",
+      "btn_submit": "登录",
+      "btn_submit_loading": "正在登录…",
+      "link_forgot_pwd": "忘记密码？",
+      "msg_or": "或",
+      "btn_github": "使用 GitHub 继续",
+      "msg_no_account": "还没有账号？",
+      "link_sign_up": "注册"
+    },
+    "sign_up": {
+      "title_page": "注册",
+      "msg_intro": "填写信息以创建账户",
+      "label_name": "姓名",
+      "label_email": "邮箱",
+      "label_password": "密码",
+      "label_password_confirm": "确认密码",
+      "ph_name": "姓名",
+      "ph_email": "m{'@'}example.com",
+      "msg_email_privacy": "我们将通过此邮箱与您联系，不会向他人泄露您的邮箱。",
+      "msg_password_hint": "长度至少为 8 个字符。",
+      "msg_confirm_hint": "请再次输入密码以确认。",
+      "btn_submit": "注册",
+      "btn_submit_loading": "正在注册…",
+      "err_pwd_mismatch": "两次输入的密码不一致，请检查后重试。",
+      "msg_or": "或",
+      "btn_github": "使用 GitHub 继续",
+      "msg_has_account": "已有账号？",
+      "link_sign_in": "登录"
+    },
+    "forgot_pwd": {
+      "title_page": "忘记密码",
+      "msg_instructions": "输入邮箱地址，我们将向您发送重置密码的链接。",
+      "msg_sent_after_send": "若 {email} 对应的账户存在，我们已向您发送重置密码链接。",
+      "label_email": "邮箱",
+      "ph_email": "m{'@'}example.com",
+      "btn_send_loading": "发送中…",
+      "btn_send": "发送重置链接",
+      "msg_resend_in": "{seconds} 秒后可重新发送",
+      "msg_remember": "记起密码了？",
+      "link_sign_in": "登录"
+    },
+    "reset_pwd": {
+      "title_page": "重置密码",
+      "msg_intro": "为您的账户设置新密码。",
+      "err_invalid_token": "重置链接无效或缺失。",
+      "err_pwd_mismatch": "两次输入的密码不一致，请检查后重试。",
+      "msg_success_redirect": "密码已更新，正在跳转至登录页…",
+      "label_password_new": "新密码",
+      "label_password_confirm": "确认密码",
+      "msg_password_hint": "长度至少为 8 个字符。",
+      "msg_confirm_hint": "请再次输入新密码。",
+      "btn_submit": "更新密码",
+      "btn_submit_loading": "保存中…",
+      "msg_remember": "记起密码了？",
+      "link_sign_in": "登录"
+    }
   }
 }
