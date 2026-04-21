@@ -1,9 +1,19 @@
 export type MailerEnv = {
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
+  DEV_RESET_LINK?: string;
 };
 
 const FROM = "MatsubaraSoda <noreply@matsubarasoda.com>";
+const LOCAL_PREVIEW_ORIGIN = "http://localhost:5173";
+
+function isDevResetLinkEnabled(env: Pick<MailerEnv, "DEV_RESET_LINK">): boolean {
+  const raw = env.DEV_RESET_LINK?.trim();
+  if (!raw) return false;
+  const lower = raw.toLowerCase();
+  return lower === "true" || lower === "1" || lower === "yes";
+}
+
 
 export async function sendResetPasswordEmail(params: {
   env: MailerEnv;
@@ -23,6 +33,11 @@ export async function sendResetPasswordEmail(params: {
 
   const normalizedBaseUrl = accountUrl.replace(/\/+$/, "");
   const resetUrl = `${normalizedBaseUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
+
+  if (isDevResetLinkEnabled(env)) {
+    const localPreviewUrl = `${LOCAL_PREVIEW_ORIGIN}/auth/reset-password?token=${encodeURIComponent(token)}`;
+    console.log("[DEV_RESET_LINK]", localPreviewUrl, `(to: ${to})`);
+  }
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",

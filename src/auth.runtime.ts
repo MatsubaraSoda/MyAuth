@@ -13,6 +13,7 @@ type RuntimeEnv = {
   DB: any;
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
+  DEV_RESET_LINK?: string;
 } & GithubOAuthEnv;
 
 let cachedRuntimeAuth: ReturnType<typeof buildRuntimeAuth> | null = null;
@@ -30,6 +31,7 @@ function buildRuntimeAuth(env: RuntimeEnv) {
           env: {
             RESEND_API_KEY: env.RESEND_API_KEY,
             ACCOUNT_URL: env.ACCOUNT_URL,
+            DEV_RESET_LINK: env.DEV_RESET_LINK,
           },
           to: user.email,
           token,
