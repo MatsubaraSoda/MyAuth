@@ -83,6 +83,24 @@
       "btn_submit_loading": "保存中…",
       "msg_remember": "记起密码了？",
       "link_sign_in": "登录"
+    },
+    "profile": {
+      "page_loading": "正在加载资料…",
+      "section_profile": "个人资料",
+      "section_change_email": "更改邮箱",
+      "section_manage_accounts": "账户管理",
+      "label_avatar": "头像",
+      "btn_change_avatar": "更换头像",
+      "hint_change_avatar_disabled": "头像上传功能暂未开放。",
+      "label_name": "姓名",
+      "btn_save_profile": "保存更改",
+      "btn_save_profile_loading": "保存中…",
+      "label_email": "邮箱",
+      "btn_update_email": "更新邮箱",
+      "hint_change_email_disabled": "更改邮箱功能将在后续版本提供。",
+      "btn_sign_out": "退出登录",
+      "btn_sign_out_loading": "正在退出…",
+      "aria_profile_avatar": "个人头像"
     }
   }
 }

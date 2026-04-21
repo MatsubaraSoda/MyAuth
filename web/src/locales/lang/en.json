@@ -83,6 +83,24 @@
       "btn_submit_loading": "Saving…",
       "msg_remember": "Remember your password?",
       "link_sign_in": "Sign In"
+    },
+    "profile": {
+      "page_loading": "Loading profile…",
+      "section_profile": "Profile",
+      "section_change_email": "Change email",
+      "section_manage_accounts": "Manage accounts",
+      "label_avatar": "Avatar",
+      "btn_change_avatar": "Change avatar",
+      "hint_change_avatar_disabled": "Avatar uploads are not available yet.",
+      "label_name": "Name",
+      "btn_save_profile": "Save changes",
+      "btn_save_profile_loading": "Saving…",
+      "label_email": "Email",
+      "btn_update_email": "Update email",
+      "hint_change_email_disabled": "Changing email will be supported in a future update.",
+      "btn_sign_out": "Sign out",
+      "btn_sign_out_loading": "Signing out…",
+      "aria_profile_avatar": "Profile picture"
     }
   }
 }
