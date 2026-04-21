@@ -3,14 +3,16 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authClient } from '@/lib/auth-client'
-import { Loader2, LogOut } from 'lucide-vue-next'
+import { Loader2, LogOut, Trash2, Upload } from 'lucide-vue-next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-} from '@/components/ui/card'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
@@ -100,8 +102,8 @@ onMounted(loadSession)
 </script>
 
 <template>
-  <div class="-mx-4 rounded-xl bg-muted/40 px-4 py-6">
-    <div class="mx-auto w-full max-w-lg space-y-8">
+  <div class="-mx-4 rounded-xl px-4 py-6">
+    <div class="mx-auto w-full lg:min-w-150 min-w-50 space-y-8">
       <p
         v-if="errorMessage"
         class="text-sm font-medium text-destructive"
@@ -123,7 +125,7 @@ onMounted(loadSession)
             {{ t('auth.profile.section_profile') }}
           </h2>
           <Card>
-            <CardContent class="space-y-6 pt-6">
+            <CardContent class="space-y-6">
               <div class="space-y-2">
                 <Label class="text-xs">
                   {{ t('auth.profile.label_avatar') }}
@@ -136,18 +138,33 @@ onMounted(loadSession)
                     />
                     <AvatarFallback>{{ initials }}</AvatarFallback>
                   </Avatar>
-                  <div class="flex flex-col gap-1">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled
+                  <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        class="h-auto min-h-0 cursor-pointer px-2 py-2 text-xs leading-tight"
+                      >
+                        {{ t('auth.profile.btn_change_avatar') }}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="start"
+                      class="w-auto min-w-max"
                     >
-                      {{ t('auth.profile.btn_change_avatar') }}
-                    </Button>
-                    <p class="text-xs text-muted-foreground">
-                      {{ t('auth.profile.hint_change_avatar_disabled') }}
-                    </p>
-                  </div>
+                      <DropdownMenuItem class="cursor-pointer text-xs">
+                        <Upload />
+                        {{ t('auth.profile.menu_upload_avatar') }}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        class="cursor-pointer text-xs"
+                      >
+                        <Trash2 />
+                        {{ t('auth.profile.menu_delete_avatar') }}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -170,12 +187,13 @@ onMounted(loadSession)
               <div class="flex justify-start">
                 <Button
                   type="button"
+                  class="h-auto min-h-0 cursor-pointer gap-1.5 px-2 py-2 text-xs leading-tight"
                   :disabled="savingProfile"
                   @click="handleSaveProfile"
                 >
                   <Loader2
                     v-if="savingProfile"
-                    class="mr-2 h-4 w-4 animate-spin"
+                    class="size-3 shrink-0 animate-spin"
                   />
                   {{
                     savingProfile
@@ -194,10 +212,7 @@ onMounted(loadSession)
             {{ t('auth.profile.section_change_email') }}
           </h2>
           <Card>
-            <CardContent class="space-y-4 pt-6">
-              <CardDescription>
-                {{ t('auth.profile.hint_change_email_disabled') }}
-              </CardDescription>
+            <CardContent class="space-y-4">
               <div class="space-y-2">
                 <Label
                   class="text-xs"
@@ -216,6 +231,7 @@ onMounted(loadSession)
               <div class="flex justify-start">
                 <Button
                   type="button"
+                  class="h-auto min-h-0 px-2 py-2 text-xs leading-tight"
                   disabled
                 >
                   {{ t('auth.profile.btn_update_email') }}
@@ -231,7 +247,7 @@ onMounted(loadSession)
             {{ t('auth.profile.section_manage_accounts') }}
           </h2>
           <Card>
-            <CardContent class="pt-6">
+            <CardContent>
               <div
                 class="flex flex-wrap items-center justify-between gap-4"
               >
@@ -254,17 +270,17 @@ onMounted(loadSession)
                 </div>
                 <Button
                   variant="outline"
-                  class="shrink-0"
+                  class="h-auto min-h-0 shrink-0 gap-1.5 px-2 py-2 text-xs leading-tight"
                   :disabled="signingOut"
                   @click="handleSignOut"
                 >
                   <Loader2
                     v-if="signingOut"
-                    class="mr-2 h-4 w-4 animate-spin"
+                    class="size-3 shrink-0 animate-spin"
                   />
                   <LogOut
                     v-else
-                    class="mr-2 h-4 w-4"
+                    class="size-3 shrink-0"
                   />
                   {{
                     signingOut
