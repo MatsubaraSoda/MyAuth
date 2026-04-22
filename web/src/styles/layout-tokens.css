@@ -1,0 +1,17 @@
+/**
+ * Layout-only tokens (auth nav spacing). Independent of color themes.
+ * Loaded after theme files so these values stay stable across palettes.
+ */
+:root {
+  --auth-nav-height: calc(var(--spacing) * 16);
+  --auth-nav-outer-gap: calc(var(--spacing) * 5);
+  --auth-nav-inline-padding: calc(var(--spacing) * 4);
+  --auth-nav-offset: calc(env(safe-area-inset-top) + var(--auth-nav-height) + var(--auth-nav-outer-gap));
+}
+
+.dark {
+  --auth-nav-height: calc(var(--spacing) * 16);
+  --auth-nav-outer-gap: calc(var(--spacing) * 5);
+  --auth-nav-inline-padding: calc(var(--spacing) * 4);
+  --auth-nav-offset: calc(env(safe-area-inset-top) + var(--auth-nav-height) + var(--auth-nav-outer-gap));
+}
