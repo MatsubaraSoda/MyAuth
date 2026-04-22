@@ -6,6 +6,6 @@ export default defineConfig({
   dialect: 'sqlite',         // Cloudflare D1 使用 SQLite 语法
   dbCredentials: {
     // 将数据库路径指派给 Drizzle
-    url: '.wrangler/state/v3/d1/miniflare-D1DatabaseObject/4c408efaefdfd07587d53e000390c688ea0e0f379b3bc67193d48b6b20a69754.sqlite', 
+    url: '../../.wrangler/state/v3/d1/miniflare-D1DatabaseObject/4c408efaefdfd07587d53e000390c688ea0e0f379b3bc67193d48b6b20a69754.sqlite',
   },
 });

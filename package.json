@@ -1,20 +1,17 @@
 {
-  "name": "MyAuth",
-  "type": "module",
+  "name": "my-auth-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
-  },
-  "dependencies": {
-    "better-auth": "^1.6.2",
-    "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.12"
+    "dev:api": "npm run dev --workspace apps/api",
+    "dev:web": "npm run dev --workspace apps/web",
+    "dev:drizzle-kit": "npm run dev:drizzle-kit --workspace apps/api",
+    "dev": "concurrently -k -n api,web,drizzle \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:drizzle-kit\""
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260413.1",
-    "@libsql/client": "^0.17.2",
-    "drizzle-kit": "^0.31.10",
-    "wrangler": "^4.4.0"
+    "concurrently": "^9.2.1"
   }
 }
