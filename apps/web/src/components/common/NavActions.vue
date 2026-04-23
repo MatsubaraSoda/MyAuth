@@ -21,7 +21,7 @@ function localeLabel(locale: AppLocale): string {
 
 <template>
   <div class="flex items-center gap-2">
-    <DropdownMenu>
+    <DropdownMenu :modal="false">
       <DropdownMenuTrigger as-child>
         <Button
           variant="outline"
@@ -48,7 +48,7 @@ function localeLabel(locale: AppLocale): string {
       </DropdownMenuContent>
     </DropdownMenu>
 
-    <DropdownMenu>
+    <DropdownMenu :modal="false">
       <DropdownMenuTrigger as-child>
         <Button
           variant="outline"
@@ -76,7 +76,7 @@ function localeLabel(locale: AppLocale): string {
       </DropdownMenuContent>
     </DropdownMenu>
 
-    <DropdownMenu>
+    <DropdownMenu :modal="false">
       <DropdownMenuTrigger as-child>
         <Button
           variant="outline"
@@ -114,7 +114,7 @@ function localeLabel(locale: AppLocale): string {
       </DropdownMenuContent>
     </DropdownMenu>
 
-    <DropdownMenu>
+    <DropdownMenu :modal="false">
       <DropdownMenuTrigger as-child>
         <Button
           variant="outline"

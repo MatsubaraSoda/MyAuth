@@ -70,7 +70,7 @@ const isNotebooksOpen = ref(false)
     </div>
 
     <div class="mt-auto grid gap-4 border-t pt-6">
-      <DropdownMenu>
+      <DropdownMenu :modal="false">
         <DropdownMenuTrigger as-child>
           <button
             class="flex w-full cursor-pointer items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors"
@@ -103,7 +103,7 @@ const isNotebooksOpen = ref(false)
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DropdownMenu>
+      <DropdownMenu :modal="false">
         <DropdownMenuTrigger as-child>
           <button
             class="flex w-full cursor-pointer items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors"
