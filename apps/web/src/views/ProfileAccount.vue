@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authClient } from '@/lib/auth-client'
-import { Loader2, LogOut, Trash2, Upload } from 'lucide-vue-next'
+import { CircleAlert, Loader2, LogOut, Trash2, Upload } from 'lucide-vue-next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,6 +15,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 
 const PLACEHOLDER_AVATAR = 'https://placehold.co/100x100'
 
@@ -29,6 +38,8 @@ const signingOut = ref(false)
 const savingProfile = ref(false)
 const errorMessage = ref('')
 const nameDraft = ref('')
+const uploadAvatarDialogOpen = ref(false)
+const deleteAvatarDialogOpen = ref(false)
 const emit = defineEmits<{
   (e: 'loading-change', value: boolean): void
   (e: 'error-change', value: string): void
@@ -156,19 +167,122 @@ watch(
                   align="start"
                   class="w-auto min-w-max"
                 >
-                  <DropdownMenuItem class="cursor-pointer text-xs">
+                  <DropdownMenuItem
+                    class="cursor-pointer text-xs"
+                    @select.prevent="uploadAvatarDialogOpen = true"
+                  >
                     <Upload />
                     {{ t('auth.profile.menu_upload_avatar') }}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     class="cursor-pointer text-xs"
+                    @select.prevent="deleteAvatarDialogOpen = true"
                   >
                     <Trash2 />
                     {{ t('auth.profile.menu_delete_avatar') }}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <DialogRoot v-model:open="uploadAvatarDialogOpen">
+                <DialogPortal>
+                  <DialogOverlay
+                    class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+                  />
+                  <DialogContent
+                    class="bg-background data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-5 shadow-lg data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+                  >
+                    <DialogTitle class="text-base font-semibold">
+                      {{ t('auth.profile.avatar_upload_title') }}
+                    </DialogTitle>
+                    <DialogDescription class="text-sm text-muted-foreground">
+                      {{ t('auth.profile.avatar_upload_desc') }}
+                    </DialogDescription>
+
+                    <div class="space-y-2">
+                      <Label
+                        class="text-xs"
+                        for="avatar-file-input"
+                      >
+                        {{ t('auth.profile.avatar_file_label') }}
+                      </Label>
+                      <Input
+                        id="avatar-file-input"
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                      />
+                      <p class="text-xs text-muted-foreground">
+                        {{ t('auth.profile.avatar_file_hint') }}
+                      </p>
+                    </div>
+
+                    <div class="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+                      {{ t('auth.profile.avatar_preview_placeholder') }}
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                      <DialogClose as-child>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                        >
+                          {{ t('auth.profile.btn_cancel') }}
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        disabled
+                      >
+                        {{ t('auth.profile.btn_upload_avatar_todo') }}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </DialogPortal>
+              </DialogRoot>
+
+              <DialogRoot v-model:open="deleteAvatarDialogOpen">
+                <DialogPortal>
+                  <DialogOverlay
+                    class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+                  />
+                  <DialogContent
+                    class="bg-background data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-5 shadow-lg data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+                  >
+                    <div class="flex items-start gap-3">
+                      <div class="rounded-full bg-destructive/10 p-2 text-destructive">
+                        <CircleAlert class="size-4" />
+                      </div>
+                      <div class="space-y-1">
+                        <DialogTitle class="text-base font-semibold">
+                          {{ t('auth.profile.avatar_delete_title') }}
+                        </DialogTitle>
+                        <DialogDescription class="text-sm text-muted-foreground">
+                          {{ t('auth.profile.avatar_delete_desc') }}
+                        </DialogDescription>
+                      </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                      <DialogClose as-child>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                        >
+                          {{ t('auth.profile.btn_cancel') }}
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        disabled
+                      >
+                        {{ t('auth.profile.btn_delete_avatar_todo') }}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </DialogPortal>
+              </DialogRoot>
             </div>
           </div>
 

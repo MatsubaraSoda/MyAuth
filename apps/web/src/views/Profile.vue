@@ -8,7 +8,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-<div class="-mx-4 w-full max-w-fit lg:max-w-2xl rounded-xl px-4 py-6">
+<div class="-mx-4 w-full max-w-2xl rounded-xl px-4 py-6">
   <div class="mx-auto w-full space-y-8">
       <Tabs
         default-value="account"
