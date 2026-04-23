@@ -142,7 +142,7 @@ watch(
                 />
                 <AvatarFallback>{{ initials }}</AvatarFallback>
               </Avatar>
-              <DropdownMenu>
+              <DropdownMenu :modal="false">
                 <DropdownMenuTrigger as-child>
                   <Button
                     type="button"
