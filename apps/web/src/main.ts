@@ -6,6 +6,7 @@ import { applyI18nLocale, i18n } from './locales'
 import router from './router'
 import { useAppStore } from './stores/app'
 import './style.css'
+import 'vue-sonner/style.css'
 
 if (__BUNDLE_LOCAL_FONTS__) {
   await import('./styles/inter-fonts.css')

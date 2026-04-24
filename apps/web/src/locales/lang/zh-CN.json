@@ -137,6 +137,7 @@
       "label_name": "姓名",
       "btn_save_profile": "保存更改",
       "btn_save_profile_loading": "保存中…",
+      "msg_profile_save_success": "个人资料已更新。",
       "label_email": "邮箱",
       "btn_update_email": "更新邮箱",
       "hint_change_email_disabled": "更改邮箱功能将在后续版本提供。",

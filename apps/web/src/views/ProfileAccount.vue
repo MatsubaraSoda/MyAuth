@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import { authClient } from '@/lib/auth-client'
 import { CircleAlert, Loader2, LogOut, Trash2, Upload } from 'lucide-vue-next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -60,8 +61,14 @@ function initialsFromName(name: string) {
   return first ? first.toUpperCase() : '?'
 }
 
-async function loadSession() {
-  loading.value = true
+/**
+ * @param silent 為 true 時不切換 `loading`（不卸載表單），用於「保存成功後」等只需刷新 session 的場景，避免整頁閃爍。
+ */
+async function loadSession(options?: { silent?: boolean }) {
+  const silent = options?.silent ?? false
+  if (!silent) {
+    loading.value = true
+  }
   errorMessage.value = ''
 
   const { data, error } = await authClient.getSession()
@@ -75,7 +82,9 @@ async function loadSession() {
     nameDraft.value = ''
   }
 
-  loading.value = false
+  if (!silent) {
+    loading.value = false
+  }
 }
 
 async function handleSaveProfile() {
@@ -91,10 +100,12 @@ async function handleSaveProfile() {
 
   if (error?.message) {
     errorMessage.value = error.message
+    toast.error(error.message)
     return
   }
 
-  await loadSession()
+  await loadSession({ silent: true })
+  toast.success(t('auth.profile.msg_profile_save_success'))
 }
 
 async function handleSignOut() {
@@ -134,7 +145,7 @@ watch(
 
 <template>
   <template v-if="!loading">
-    <!-- Profile -->
+    <!-- Section 1 — Profile (avatar + display name). See docs/TODO.md. -->
     <section class="space-y-3">
       <h2 class="text-base font-semibold tracking-tight">
         {{ t('auth.profile.section_profile') }}
@@ -185,6 +196,7 @@ watch(
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              <!-- Section 1 — dialog: upload avatar -->
               <DialogRoot v-model:open="uploadAvatarDialogOpen">
                 <DialogPortal>
                   <DialogOverlay
@@ -241,6 +253,7 @@ watch(
                 </DialogPortal>
               </DialogRoot>
 
+              <!-- Section 1 — dialog: delete avatar -->
               <DialogRoot v-model:open="deleteAvatarDialogOpen">
                 <DialogPortal>
                   <DialogOverlay
@@ -324,7 +337,7 @@ watch(
       </Card>
     </section>
 
-    <!-- Change email -->
+    <!-- Section 2 — Change email. See docs/TODO.md. -->
     <section class="space-y-3">
       <h2 class="text-base font-semibold tracking-tight">
         {{ t('auth.profile.section_change_email') }}
@@ -359,7 +372,7 @@ watch(
       </Card>
     </section>
 
-    <!-- Manage accounts -->
+    <!-- Section 3 — Manage accounts. See docs/TODO.md. -->
     <section class="space-y-3">
       <h2 class="text-base font-semibold tracking-tight">
         {{ t('auth.profile.section_manage_accounts') }}
