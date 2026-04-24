@@ -26,6 +26,16 @@ import {
 } from 'reka-ui'
 
 const PLACEHOLDER_AVATAR = 'https://placehold.co/100x100'
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024
+
+type UploadSig = {
+  cloudName: string
+  apiKey: string
+  signature: string
+  timestamp: string
+  publicId: string
+  eager: string
+}
 
 type SessionData = Awaited<ReturnType<typeof authClient.getSession>>['data']
 
@@ -42,10 +52,18 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const savingProfile = ref(false)
+const isUploading = ref(false)
 const nameDraft = ref('')
 const uploadAvatarDialogOpen = ref(false)
 const deleteAvatarDialogOpen = ref(false)
 const saveProfileDialogOpen = ref(false)
+const selectedPreviewUrl = ref<string | null>(null)
+
+const AVATAR_INPUT_ID = 'avatar-file-input'
+
+function getAvatarFileInput(): HTMLInputElement | null {
+  return document.getElementById(AVATAR_INPUT_ID) as HTMLInputElement | null
+}
 
 const avatarSrc = computed(
   () => props.session?.user?.image ?? PLACEHOLDER_AVATAR,
@@ -62,6 +80,30 @@ function initialsFromName(name: string) {
   return first ? first.toUpperCase() : '?'
 }
 
+function revokePreview() {
+  if (selectedPreviewUrl.value) {
+    URL.revokeObjectURL(selectedPreviewUrl.value)
+    selectedPreviewUrl.value = null
+  }
+}
+
+function onAvatarFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  revokePreview()
+  const file = input.files?.[0]
+  if (file) {
+    selectedPreviewUrl.value = URL.createObjectURL(file)
+  }
+}
+
+watch(uploadAvatarDialogOpen, (open) => {
+  if (!open) {
+    revokePreview()
+    const el = getAvatarFileInput()
+    if (el) el.value = ''
+  }
+})
+
 watch(
   () => props.session?.user?.name,
   (name) => {
@@ -75,7 +117,7 @@ watch(
 )
 
 async function handleSaveProfile() {
-  if (savingProfile.value || props.loading) return
+  if (savingProfile.value || props.loading || isUploading.value) return
   savingProfile.value = true
 
   const { error } = await authClient.updateUser({
@@ -97,6 +139,98 @@ async function handleSaveProfile() {
 async function handleConfirmSaveProfile() {
   await handleSaveProfile()
   saveProfileDialogOpen.value = false
+}
+
+async function handleAvatarUpload() {
+  if (isUploading.value) return
+  const file = getAvatarFileInput()?.files?.[0]
+  if (!file) {
+    toast.error(t('auth.profile.msg_avatar_no_file'))
+    return
+  }
+  if (file.size > MAX_AVATAR_BYTES) {
+    toast.error(t('auth.profile.avatar_file_hint'))
+    return
+  }
+
+  isUploading.value = true
+  try {
+    const sigRes = await fetch(`${window.location.origin}/api/cloudinary/upload-signature`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    if (!sigRes.ok) {
+      const err = (await sigRes.json().catch(() => ({}))) as { error?: string }
+      toast.error(err.error ?? t('auth.profile.msg_avatar_signature_error'))
+      return
+    }
+    const sig = (await sigRes.json()) as UploadSig
+
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('api_key', sig.apiKey)
+    fd.append('timestamp', sig.timestamp)
+    fd.append('signature', sig.signature)
+    fd.append('public_id', sig.publicId)
+    fd.append('eager', sig.eager)
+
+    const up = await fetch(
+      `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+      { method: 'POST', body: fd },
+    )
+    const body = (await up.json().catch(() => ({}))) as {
+      secure_url?: string
+      error?: { message?: string }
+    }
+    if (!up.ok) {
+      toast.error(body.error?.message ?? t('auth.profile.msg_avatar_upload_error'))
+      return
+    }
+    if (!body.secure_url) {
+      toast.error(t('auth.profile.msg_avatar_upload_error'))
+      return
+    }
+
+    const { error } = await authClient.updateUser({ image: body.secure_url })
+    if (error?.message) {
+      toast.error(error.message)
+      return
+    }
+
+    emit('saved')
+    toast.success(t('auth.profile.msg_avatar_upload_success'))
+    uploadAvatarDialogOpen.value = false
+  } finally {
+    isUploading.value = false
+  }
+}
+
+async function handleConfirmDeleteAvatar() {
+  if (isUploading.value) return
+  isUploading.value = true
+  try {
+    const del = await fetch(`${window.location.origin}/api/cloudinary/avatar`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+    if (!del.ok) {
+      const err = (await del.json().catch(() => ({}))) as { error?: string }
+      toast.error(err.error ?? t('auth.profile.msg_avatar_delete_error'))
+      return
+    }
+
+    const { error } = await authClient.updateUser({ image: null })
+    if (error?.message) {
+      toast.error(error.message)
+      return
+    }
+
+    emit('saved')
+    toast.success(t('auth.profile.msg_avatar_delete_success'))
+    deleteAvatarDialogOpen.value = false
+  } finally {
+    isUploading.value = false
+  }
 }
 </script>
 
@@ -126,6 +260,7 @@ async function handleConfirmSaveProfile() {
                   type="button"
                   variant="secondary"
                   class="h-auto min-h-0 cursor-pointer px-2 py-2 text-xs leading-tight"
+                  :disabled="isUploading"
                 >
                   {{ t('auth.profile.btn_change_avatar') }}
                 </Button>
@@ -136,6 +271,7 @@ async function handleConfirmSaveProfile() {
               >
                 <DropdownMenuItem
                   class="cursor-pointer text-xs"
+                  :disabled="isUploading"
                   @select="uploadAvatarDialogOpen = true"
                 >
                   <Upload />
@@ -144,6 +280,7 @@ async function handleConfirmSaveProfile() {
                 <DropdownMenuItem
                   variant="destructive"
                   class="cursor-pointer text-xs"
+                  :disabled="isUploading"
                   @select="deleteAvatarDialogOpen = true"
                 >
                   <Trash2 />
@@ -176,17 +313,27 @@ async function handleConfirmSaveProfile() {
                       {{ t('auth.profile.avatar_file_label') }}
                     </Label>
                     <Input
-                      id="avatar-file-input"
+                      :id="AVATAR_INPUT_ID"
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
+                      :disabled="isUploading"
+                      @change="onAvatarFileChange"
                     />
                     <p class="text-xs text-muted-foreground">
                       {{ t('auth.profile.avatar_file_hint') }}
                     </p>
                   </div>
 
-                  <div class="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
-                    {{ t('auth.profile.avatar_preview_placeholder') }}
+                  <div
+                    class="flex min-h-30 items-center justify-center overflow-hidden rounded-md border border-dashed p-3 text-xs text-muted-foreground"
+                  >
+                    <img
+                      v-if="selectedPreviewUrl"
+                      :src="selectedPreviewUrl"
+                      alt=""
+                      class="max-h-40 w-auto max-w-full rounded object-contain"
+                    />
+                    <span v-else>{{ t('auth.profile.avatar_preview_placeholder') }}</span>
                   </div>
 
                   <div class="flex justify-end gap-2">
@@ -195,16 +342,26 @@ async function handleConfirmSaveProfile() {
                         type="button"
                         variant="secondary"
                         class="cursor-pointer"
+                        :disabled="isUploading"
                       >
                         {{ t('auth.profile.btn_cancel') }}
                       </Button>
                     </DialogClose>
                     <Button
                       type="button"
-                      class="cursor-pointer"
-                      disabled
+                      class="cursor-pointer gap-1.5"
+                      :disabled="isUploading"
+                      @click="handleAvatarUpload"
                     >
-                      {{ t('auth.profile.btn_upload_avatar_todo') }}
+                      <Loader2
+                        v-if="isUploading"
+                        class="size-3 shrink-0 animate-spin"
+                      />
+                      {{
+                        isUploading
+                          ? t('auth.profile.btn_avatar_uploading')
+                          : t('auth.profile.btn_upload_avatar')
+                      }}
                     </Button>
                   </div>
                 </DialogContent>
@@ -237,6 +394,7 @@ async function handleConfirmSaveProfile() {
                         type="button"
                         variant="secondary"
                         class="cursor-pointer"
+                        :disabled="isUploading"
                       >
                         {{ t('auth.profile.btn_cancel') }}
                       </Button>
@@ -244,10 +402,19 @@ async function handleConfirmSaveProfile() {
                     <Button
                       type="button"
                       variant="destructive"
-                      class="cursor-pointer"
-                      disabled
+                      class="cursor-pointer gap-1.5"
+                      :disabled="isUploading"
+                      @click="handleConfirmDeleteAvatar"
                     >
-                      {{ t('auth.profile.btn_delete_avatar_todo') }}
+                      <Loader2
+                        v-if="isUploading"
+                        class="size-3 shrink-0 animate-spin"
+                      />
+                      {{
+                        isUploading
+                          ? t('auth.profile.btn_avatar_deleting')
+                          : t('auth.profile.btn_delete_avatar')
+                      }}
                     </Button>
                   </div>
                 </DialogContent>
@@ -268,7 +435,7 @@ async function handleConfirmSaveProfile() {
             v-model="nameDraft"
             type="text"
             autocomplete="name"
-            :disabled="savingProfile"
+            :disabled="savingProfile || isUploading"
           />
         </div>
 
@@ -276,7 +443,7 @@ async function handleConfirmSaveProfile() {
           <Button
             type="button"
             class="h-auto min-h-0 cursor-pointer gap-1.5 px-2 py-2 text-xs leading-tight"
-            :disabled="savingProfile"
+            :disabled="savingProfile || isUploading"
             @click="saveProfileDialogOpen = true"
           >
             <Loader2
