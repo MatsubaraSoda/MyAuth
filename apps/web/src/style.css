@@ -55,6 +55,9 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -63,3 +66,16 @@
     font-family: 'Inter', sans-serif;
   }
 }
+
+/* --- 把下面的代码加在文件最底部，绝对不要包在 @layer 里面 --- */
+
+/* 只要 Radix 给 body 加了 overflow: hidden 的内联样式，就强行把它的 padding-right 清零 */
+body[style*="overflow: hidden"] {
+  padding-right: 0 !important;
+}
+
+/* 如果你的应用平时根本不需要给 body 加右边距，也可以直接用最无脑的写法：*/
+/* body {
+  padding-right: 0 !important;
+} 
+*/

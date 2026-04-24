@@ -3,18 +3,13 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authClient } from '@/lib/auth-client'
-import { Loader2, LogOut, Trash2, Upload } from 'lucide-vue-next'
+import { Loader2, LogOut } from 'lucide-vue-next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import ProfileBasics from '@/components/profile/ProfileBasics.vue'
 
 const PLACEHOLDER_AVATAR = 'https://placehold.co/100x100'
 
@@ -26,9 +21,7 @@ type SessionData = Awaited<ReturnType<typeof authClient.getSession>>['data']
 const session = ref<SessionData | null>(null)
 const loading = ref(true)
 const signingOut = ref(false)
-const savingProfile = ref(false)
 const errorMessage = ref('')
-const nameDraft = ref('')
 const emit = defineEmits<{
   (e: 'loading-change', value: boolean): void
   (e: 'error-change', value: string): void
@@ -49,8 +42,14 @@ function initialsFromName(name: string) {
   return first ? first.toUpperCase() : '?'
 }
 
-async function loadSession() {
-  loading.value = true
+/**
+ * @param silent 為 true 時不切換 `loading`（不卸載表單），用於子組件保存成功後刷新 session 等場景。
+ */
+async function loadSession(options?: { silent?: boolean }) {
+  const silent = options?.silent ?? false
+  if (!silent) {
+    loading.value = true
+  }
   errorMessage.value = ''
 
   const { data, error } = await authClient.getSession()
@@ -58,32 +57,19 @@ async function loadSession() {
 
   if (error?.message) {
     errorMessage.value = error.message
-  } else if (data?.user?.name != null) {
-    nameDraft.value = data.user.name ?? ''
-  } else {
-    nameDraft.value = ''
   }
 
-  loading.value = false
+  if (!silent) {
+    loading.value = false
+  }
 }
 
-async function handleSaveProfile() {
-  if (savingProfile.value || loading.value) return
-  errorMessage.value = ''
-  savingProfile.value = true
+function onProfileBasicsSaved() {
+  void loadSession({ silent: true })
+}
 
-  const { error } = await authClient.updateUser({
-    name: nameDraft.value.trim(),
-  })
-
-  savingProfile.value = false
-
-  if (error?.message) {
-    errorMessage.value = error.message
-    return
-  }
-
-  await loadSession()
+function onProfileBasicsSaveError(message: string) {
+  errorMessage.value = message
 }
 
 async function handleSignOut() {
@@ -123,94 +109,14 @@ watch(
 
 <template>
   <template v-if="!loading">
-    <!-- Profile -->
-    <section class="space-y-3">
-      <h2 class="text-base font-semibold tracking-tight">
-        {{ t('auth.profile.section_profile') }}
-      </h2>
-      <Card>
-        <CardContent class="space-y-6">
-          <div class="space-y-2">
-            <Label class="text-xs">
-              {{ t('auth.profile.label_avatar') }}
-            </Label>
-            <div class="flex flex-wrap items-center gap-4">
-              <Avatar class="size-10">
-                <AvatarImage
-                  :src="avatarSrc"
-                  :alt="t('auth.profile.aria_profile_avatar')"
-                />
-                <AvatarFallback>{{ initials }}</AvatarFallback>
-              </Avatar>
-              <DropdownMenu :modal="false">
-                <DropdownMenuTrigger as-child>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    class="h-auto min-h-0 cursor-pointer px-2 py-2 text-xs leading-tight"
-                  >
-                    {{ t('auth.profile.btn_change_avatar') }}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="start"
-                  class="w-auto min-w-max"
-                >
-                  <DropdownMenuItem class="cursor-pointer text-xs">
-                    <Upload />
-                    {{ t('auth.profile.menu_upload_avatar') }}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    class="cursor-pointer text-xs"
-                  >
-                    <Trash2 />
-                    {{ t('auth.profile.menu_delete_avatar') }}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+    <ProfileBasics
+      :session="session"
+      :loading="loading"
+      @saved="onProfileBasicsSaved"
+      @save-error="onProfileBasicsSaveError"
+    />
 
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="profile-name"
-            >
-              {{ t('auth.profile.label_name') }}
-            </Label>
-            <Input
-              id="profile-name"
-              v-model="nameDraft"
-              type="text"
-              autocomplete="name"
-              :disabled="savingProfile"
-            />
-          </div>
-
-          <div class="flex justify-start">
-            <Button
-              type="button"
-              class="h-auto min-h-0 cursor-pointer gap-1.5 px-2 py-2 text-xs leading-tight"
-              :disabled="savingProfile"
-              @click="handleSaveProfile"
-            >
-              <Loader2
-                v-if="savingProfile"
-                class="size-3 shrink-0 animate-spin"
-              />
-              {{
-                savingProfile
-                  ? t('auth.profile.btn_save_profile_loading')
-                  : t('auth.profile.btn_save_profile')
-              }}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </section>
-
-    <!-- Change email -->
+    <!-- Section 2 — Change email. See docs/TODO.md. -->
     <section class="space-y-3">
       <h2 class="text-base font-semibold tracking-tight">
         {{ t('auth.profile.section_change_email') }}
@@ -245,7 +151,7 @@ watch(
       </Card>
     </section>
 
-    <!-- Manage accounts -->
+    <!-- Section 3 — Manage accounts. See docs/TODO.md. -->
     <section class="space-y-3">
       <h2 class="text-base font-semibold tracking-tight">
         {{ t('auth.profile.section_manage_accounts') }}
