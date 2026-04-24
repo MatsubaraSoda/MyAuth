@@ -138,6 +138,8 @@
       "btn_save_profile": "Save changes",
       "btn_save_profile_loading": "Saving…",
       "msg_profile_save_success": "Profile updated.",
+      "profile_save_confirm_title": "Save profile changes?",
+      "profile_save_confirm_desc": "Your display name will be updated for this account.",
       "label_email": "Email",
       "btn_update_email": "Update email",
       "hint_change_email_disabled": "Changing email will be supported in a future update.",
