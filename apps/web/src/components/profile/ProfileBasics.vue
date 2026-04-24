@@ -57,13 +57,9 @@ const nameDraft = ref('')
 const uploadAvatarDialogOpen = ref(false)
 const deleteAvatarDialogOpen = ref(false)
 const saveProfileDialogOpen = ref(false)
+const selectedFile = ref<File | null>(null)
 const selectedPreviewUrl = ref<string | null>(null)
-
-const AVATAR_INPUT_ID = 'avatar-file-input'
-
-function getAvatarFileInput(): HTMLInputElement | null {
-  return document.getElementById(AVATAR_INPUT_ID) as HTMLInputElement | null
-}
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const avatarSrc = computed(
   () => props.session?.user?.image ?? PLACEHOLDER_AVATAR,
@@ -87,10 +83,11 @@ function revokePreview() {
   }
 }
 
-function onAvatarFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
+function handleFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
   revokePreview()
-  const file = input.files?.[0]
+  const file = input.files?.[0] ?? null
+  selectedFile.value = file
   if (file) {
     selectedPreviewUrl.value = URL.createObjectURL(file)
   }
@@ -99,8 +96,10 @@ function onAvatarFileChange(e: Event) {
 watch(uploadAvatarDialogOpen, (open) => {
   if (!open) {
     revokePreview()
-    const el = getAvatarFileInput()
-    if (el) el.value = ''
+    selectedFile.value = null
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
   }
 })
 
@@ -143,7 +142,7 @@ async function handleConfirmSaveProfile() {
 
 async function handleAvatarUpload() {
   if (isUploading.value) return
-  const file = getAvatarFileInput()?.files?.[0]
+  const file = selectedFile.value
   if (!file) {
     toast.error(t('auth.profile.msg_avatar_no_file'))
     return
@@ -202,6 +201,11 @@ async function handleAvatarUpload() {
     uploadAvatarDialogOpen.value = false
   } finally {
     isUploading.value = false
+    selectedFile.value = null
+    revokePreview()
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
   }
 }
 
@@ -313,11 +317,12 @@ async function handleConfirmDeleteAvatar() {
                       {{ t('auth.profile.avatar_file_label') }}
                     </Label>
                     <Input
-                      :id="AVATAR_INPUT_ID"
+                      id="avatar-file-input"
+                      ref="fileInputRef"
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
                       :disabled="isUploading"
-                      @change="onAvatarFileChange"
+                      @change="handleFileChange"
                     />
                     <p class="text-xs text-muted-foreground">
                       {{ t('auth.profile.avatar_file_hint') }}
