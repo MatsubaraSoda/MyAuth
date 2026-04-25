@@ -76,6 +76,18 @@ const router = createRouter({
         }
       ]
     },
+    {
+      path: '/auth/verify-success',
+      component: AuthLayout,
+      meta: { requiresAuth: false, requiresGuest: false },
+      children: [
+        {
+          path: '',
+          name: 'VerifySuccess',
+          component: () => import('@/views/VerifySuccess.vue'),
+        },
+      ],
+    },
 
     // ==========================================
     // 404 捕获 (可选，但强烈建议加上)

@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
-import { sendResetPasswordEmail } from "./mailer";
+import { sendResetPasswordEmail, sendVerificationEmail } from "./mailer";
 import {
   authBaseConfig,
   createGithubSocialProvidersConfig,
@@ -35,6 +35,19 @@ function buildRuntimeAuth(env: RuntimeEnv) {
           },
           to: user.email,
           token,
+        });
+      },
+    },
+    emailVerification: {
+      ...(authBaseConfig.emailVerification || {}),
+      sendVerificationEmail: async ({ user, url, token }) => {
+        void token;
+        await sendVerificationEmail({
+          env: {
+            RESEND_API_KEY: env.RESEND_API_KEY,
+          },
+          to: user.email,
+          url,
         });
       },
     },

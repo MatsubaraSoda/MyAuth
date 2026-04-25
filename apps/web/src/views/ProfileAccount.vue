@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authClient } from '@/lib/auth-client'
@@ -7,9 +7,8 @@ import { Loader2, LogOut } from 'lucide-vue-next'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import ProfileBasics from '@/components/profile/ProfileBasics.vue'
+import ProfileEmailVerification from '@/components/profile/ProfileEmailVerification.vue'
 
 const PLACEHOLDER_AVATAR = 'https://placehold.co/100x100'
 
@@ -72,6 +71,14 @@ function onProfileBasicsSaveError(message: string) {
   errorMessage.value = message
 }
 
+function handleEmailVerifySent() {
+  void loadSession({ silent: true })
+}
+
+function handleEmailVerifyError(message: string) {
+  errorMessage.value = message
+}
+
 async function handleSignOut() {
   if (signingOut.value) return
   errorMessage.value = ''
@@ -88,7 +95,24 @@ async function handleSignOut() {
   await router.push('/auth/sign-in')
 }
 
+function onWindowFocusRefresh() {
+  void loadSession({ silent: true })
+}
+
+function onVisibilityChangeRefresh() {
+  if (document.visibilityState !== 'visible') return
+  void loadSession({ silent: true })
+}
+
 onMounted(loadSession)
+onMounted(() => {
+  window.addEventListener('focus', onWindowFocusRefresh)
+  document.addEventListener('visibilitychange', onVisibilityChangeRefresh)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', onWindowFocusRefresh)
+  document.removeEventListener('visibilitychange', onVisibilityChangeRefresh)
+})
 
 watch(
   loading,
@@ -116,40 +140,12 @@ watch(
       @save-error="onProfileBasicsSaveError"
     />
 
-    <!-- Section 2 — Change email. See docs/TODO.md. -->
-    <section class="space-y-3">
-      <h2 class="text-base font-semibold tracking-tight">
-        {{ t('auth.profile.section_change_email') }}
-      </h2>
-      <Card>
-        <CardContent class="space-y-4">
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="profile-email"
-            >
-              {{ t('auth.profile.label_email') }}
-            </Label>
-            <Input
-              id="profile-email"
-              type="email"
-              :model-value="session?.user?.email ?? ''"
-              disabled
-              readonly
-            />
-          </div>
-          <div class="flex justify-start">
-            <Button
-              type="button"
-              class="h-auto min-h-0 px-2 py-2 text-xs leading-tight"
-              disabled
-            >
-              {{ t('auth.profile.btn_update_email') }}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </section>
+    <ProfileEmailVerification
+      :email="session?.user?.email"
+      :verified="Boolean(session?.user?.emailVerified)"
+      @sent="handleEmailVerifySent"
+      @error="handleEmailVerifyError"
+    />
 
     <!-- Section 3 — Manage accounts. See docs/TODO.md. -->
     <section class="space-y-3">
