@@ -8,6 +8,7 @@ type Bindings = {
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
   DEV_RESET_LINK?: string;
+  DEV_VERIFICATION_LINK?: string;
   GITHUB_CLIENT_ID: string;
   GITHUB_CLIENT_SECRET: string;
   CLOUDINARY_CLOUD_NAME: string;

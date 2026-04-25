@@ -2,6 +2,7 @@ export type MailerEnv = {
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
   DEV_RESET_LINK?: string;
+  DEV_VERIFICATION_LINK?: string;
 };
 
 const FROM = "MatsubaraSoda <noreply@matsubarasoda.com>";
@@ -64,4 +65,11 @@ export async function sendResetPasswordEmail(params: {
   }
 
   return response.json();
+}
+
+export async function sendVerificationEmail(email: string, url: string) {
+  // TODO: Replace with Resend API call
+  console.log(
+    `[MAILER_TODO] Verification email sending is not implemented yet (email: ${email}, url: ${url})`,
+  );
 }

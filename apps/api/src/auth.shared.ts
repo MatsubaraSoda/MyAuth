@@ -5,6 +5,9 @@ export const authBaseConfig = {
   emailAndPassword: {
     enabled: true,
   },
+  emailVerification: {
+    sendOnSignUp: false,
+  },
   advanced: {
     useSecureCookies: true,
     defaultCookieAttributes: {
