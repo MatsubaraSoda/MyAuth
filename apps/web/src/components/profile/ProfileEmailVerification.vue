@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Loader2 } from 'lucide-vue-next'
+import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,24 +10,30 @@ import { Label } from '@/components/ui/label'
 
 const props = defineProps<{
   email?: string | null
+  verified?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'sent'): void
+  (e: 'error', message: string): void
 }>()
 
 const { t } = useI18n()
 
-const emailVerifyState = ref<'unverified' | 'sending' | 'cooldown' | 'verified'>(
-  'unverified',
-)
+const emailVerifyState = ref<'idle' | 'sending' | 'cooldown' | 'error'>('idle')
 const cooldown = ref(0)
 const cooldownEndTime = ref(0)
 const isSuccessHintVisible = ref(false)
+const errorMessage = ref('')
 const countdownTimer = ref<ReturnType<typeof setInterval> | null>(null)
-const sendingTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const isVerifying = computed(() => emailVerifyState.value === 'sending')
 const isCooldown = computed(() => emailVerifyState.value === 'cooldown')
-const isVerified = computed(() => emailVerifyState.value === 'verified')
+const isError = computed(() => emailVerifyState.value === 'error')
+const isVerified = computed(() => Boolean(props.verified))
+const hasEmail = computed(() => Boolean(props.email))
 const canSendVerify = computed(
-  () => emailVerifyState.value === 'unverified' && Boolean(props.email),
+  () => !isVerified.value && emailVerifyState.value === 'idle' && hasEmail.value,
 )
 const resendButtonText = computed(() =>
   t('auth.profile.btn_resend_verify_countdown', {
@@ -34,70 +41,94 @@ const resendButtonText = computed(() =>
   }),
 )
 
-function clearSendingTimer() {
-  if (!sendingTimer.value) return
-  clearTimeout(sendingTimer.value)
-  sendingTimer.value = null
-}
-
 function clearCountdownTimer() {
   if (!countdownTimer.value) return
   clearInterval(countdownTimer.value)
   countdownTimer.value = null
 }
 
-function resetToUnverified() {
+function resetToIdle() {
   clearCountdownTimer()
   cooldown.value = 0
   cooldownEndTime.value = 0
   isSuccessHintVisible.value = false
-  emailVerifyState.value = 'unverified'
+  emailVerifyState.value = 'idle'
 }
 
 function updateCooldownFromEndTime() {
-  const remainingMs = Math.max(0, cooldownEndTime.value - Date.now())
-  cooldown.value = Math.ceil(remainingMs / 1000)
+  cooldown.value = Math.max(
+    0,
+    Math.ceil((cooldownEndTime.value - Date.now()) / 1000),
+  )
 
-  if (remainingMs <= 0) {
-    resetToUnverified()
+  if (cooldown.value <= 0) {
+    resetToIdle()
   }
 }
 
-function startCooldown() {
+function startCooldown(durationMs = 60_000) {
   clearCountdownTimer()
-  cooldownEndTime.value = Date.now() + 60_000
+  cooldownEndTime.value = Date.now() + durationMs
   emailVerifyState.value = 'cooldown'
   isSuccessHintVisible.value = true
+  errorMessage.value = ''
   updateCooldownFromEndTime()
 
   countdownTimer.value = setInterval(() => {
     updateCooldownFromEndTime()
-  }, 250)
+  }, 1_000)
 }
 
-function handleSendVerifyEmail() {
-  if (!canSendVerify.value) return
+function extractRetryAfterSeconds(error: unknown): number | null {
+  if (!(error instanceof Error)) return null
+  const statusMatch = error.message.match(/\b429\b/)
+  const retryAfterMatch = error.message.match(/retry[-_\s]?after[:=\s]+(\d+)/i)
+  if (statusMatch && retryAfterMatch?.[1]) {
+    return Number.parseInt(retryAfterMatch[1], 10)
+  }
+  return null
+}
 
-  clearSendingTimer()
+function isRateLimitError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  return (
+    /\b429\b/.test(error.message) ||
+    /too many requests/i.test(error.message)
+  )
+}
+
+async function handleSendVerifyEmail() {
+  if (!hasEmail.value) return
+  if (isVerified.value || (!canSendVerify.value && !isError.value)) return
+
+  errorMessage.value = ''
+  isSuccessHintVisible.value = false
   emailVerifyState.value = 'sending'
 
-  sendingTimer.value = setTimeout(() => {
-    sendingTimer.value = null
+  try {
+    await authClient.sendVerificationEmail({
+      email: props.email ?? '',
+      callbackURL: `${window.location.origin}/auth/verify-success`,
+    })
+    emit('sent')
     startCooldown()
-  }, 1_500)
-}
+  } catch (error) {
+    if (isRateLimitError(error)) {
+      const retryAfterSeconds = extractRetryAfterSeconds(error) ?? 60
+      startCooldown(retryAfterSeconds * 1_000)
+      return
+    }
 
-function handleBadgeAltClick() {
-  clearSendingTimer()
-  clearCountdownTimer()
-  cooldown.value = 0
-  cooldownEndTime.value = 0
-  isSuccessHintVisible.value = false
-  emailVerifyState.value = 'verified'
+    emailVerifyState.value = 'error'
+    errorMessage.value =
+      error instanceof Error
+        ? error.message
+        : t('auth.profile.msg_verify_email_error')
+    emit('error', errorMessage.value)
+  }
 }
 
 onBeforeUnmount(() => {
-  clearSendingTimer()
   clearCountdownTimer()
 })
 </script>
@@ -105,7 +136,7 @@ onBeforeUnmount(() => {
 <template>
   <section class="space-y-3">
     <h2 class="text-base font-semibold tracking-tight">
-      {{ t('auth.profile.section_change_email') }}
+      {{ t('auth.profile.section_email_verification') }}
     </h2>
     <Card>
       <CardContent class="space-y-4">
@@ -122,7 +153,6 @@ onBeforeUnmount(() => {
                   ? 'bg-primary/15 text-primary'
                   : 'bg-secondary text-secondary-foreground'
               "
-              @click.alt.exact="handleBadgeAltClick"
             >
               <span
                 class="size-1.5 rounded-full"
@@ -150,7 +180,7 @@ onBeforeUnmount(() => {
           <Button
             type="button"
             class="h-auto min-h-0 px-2 py-2 text-xs leading-tight"
-            :disabled="isVerifying || isCooldown || !canSendVerify"
+            :disabled="isVerifying || isCooldown || (!canSendVerify && !isError) || !hasEmail"
             @click="handleSendVerifyEmail"
           >
             <Loader2
@@ -162,7 +192,9 @@ onBeforeUnmount(() => {
                 ? t('auth.profile.btn_send_verify_loading')
                 : isCooldown
                   ? resendButtonText
-                  : t('auth.profile.btn_send_verify')
+                  : isError
+                    ? t('auth.profile.btn_retry_verify')
+                    : t('auth.profile.btn_send_verify')
             }}
           </Button>
         </div>
@@ -177,8 +209,25 @@ onBeforeUnmount(() => {
           <p
             v-if="isSuccessHintVisible"
             class="text-xs text-primary"
+            aria-live="polite"
           >
             {{ t('auth.profile.msg_verify_email_sent') }}
+          </p>
+        </Transition>
+        <Transition
+          enter-active-class="duration-200 ease-out transition-all"
+          enter-from-class="translate-y-1 opacity-0"
+          enter-to-class="translate-y-0 opacity-100"
+          leave-active-class="duration-200 ease-out transition-all"
+          leave-from-class="translate-y-0 opacity-100"
+          leave-to-class="translate-y-1 opacity-0"
+        >
+          <p
+            v-if="isError && errorMessage"
+            class="text-xs text-destructive"
+            aria-live="polite"
+          >
+            {{ errorMessage }}
           </p>
         </Transition>
       </CardContent>

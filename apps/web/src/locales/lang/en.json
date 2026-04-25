@@ -84,6 +84,11 @@
       "msg_remember": "Remember your password?",
       "link_sign_in": "Sign In"
     },
+    "verify_success": {
+      "title": "Email verified successfully",
+      "description": "Your email has been verified. You can now return to your dashboard.",
+      "btn_back_to_console": "Back to dashboard"
+    },
     "profile": {
       "tab_account": "Account",
       "tab_security": "Security",
@@ -118,7 +123,7 @@
         "aria_toggle_password_hide": "Hide password"
       },
       "section_profile": "Profile",
-      "section_change_email": "Email verification",
+      "section_email_verification": "Email verification",
       "section_manage_accounts": "Manage accounts",
       "label_avatar": "Avatar",
       "btn_change_avatar": "Change avatar",
@@ -151,10 +156,12 @@
       "label_email": "Email",
       "btn_send_verify": "Send verification email",
       "btn_send_verify_loading": "Sending…",
+      "btn_retry_verify": "Retry send",
       "btn_resend_verify_countdown": "Resend ({seconds}s)",
       "status_unverified": "Unverified",
       "status_verified": "Verified",
       "msg_verify_email_sent": "Verification email sent. Please check your inbox.",
+      "msg_verify_email_error": "Failed to send verification email. Please try again later.",
       "btn_update_email": "Update email",
       "hint_change_email_disabled": "Changing email will be supported in a future update.",
       "btn_sign_out": "Sign out",

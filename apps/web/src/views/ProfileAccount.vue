@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authClient } from '@/lib/auth-client'
@@ -71,6 +71,14 @@ function onProfileBasicsSaveError(message: string) {
   errorMessage.value = message
 }
 
+function handleEmailVerifySent() {
+  void loadSession({ silent: true })
+}
+
+function handleEmailVerifyError(message: string) {
+  errorMessage.value = message
+}
+
 async function handleSignOut() {
   if (signingOut.value) return
   errorMessage.value = ''
@@ -87,7 +95,24 @@ async function handleSignOut() {
   await router.push('/auth/sign-in')
 }
 
+function onWindowFocusRefresh() {
+  void loadSession({ silent: true })
+}
+
+function onVisibilityChangeRefresh() {
+  if (document.visibilityState !== 'visible') return
+  void loadSession({ silent: true })
+}
+
 onMounted(loadSession)
+onMounted(() => {
+  window.addEventListener('focus', onWindowFocusRefresh)
+  document.addEventListener('visibilitychange', onVisibilityChangeRefresh)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', onWindowFocusRefresh)
+  document.removeEventListener('visibilitychange', onVisibilityChangeRefresh)
+})
 
 watch(
   loading,
@@ -115,7 +140,12 @@ watch(
       @save-error="onProfileBasicsSaveError"
     />
 
-    <ProfileEmailVerification :email="session?.user?.email" />
+    <ProfileEmailVerification
+      :email="session?.user?.email"
+      :verified="Boolean(session?.user?.emailVerified)"
+      @sent="handleEmailVerifySent"
+      @error="handleEmailVerifyError"
+    />
 
     <!-- Section 3 — Manage accounts. See docs/TODO.md. -->
     <section class="space-y-3">

@@ -84,6 +84,11 @@
       "msg_remember": "记起密码了？",
       "link_sign_in": "登录"
     },
+    "verify_success": {
+      "title": "邮箱验证成功",
+      "description": "你的邮箱已完成验证，现在可以继续使用控制台功能。",
+      "btn_back_to_console": "返回控制台"
+    },
     "profile": {
       "tab_account": "账户",
       "tab_security": "安全",
@@ -118,7 +123,7 @@
         "aria_toggle_password_hide": "隐藏密码"
       },
       "section_profile": "个人资料",
-      "section_change_email": "邮箱验证",
+      "section_email_verification": "邮箱验证",
       "section_manage_accounts": "账户管理",
       "label_avatar": "头像",
       "btn_change_avatar": "更换头像",
@@ -151,10 +156,12 @@
       "label_email": "邮箱",
       "btn_send_verify": "发送验证邮件",
       "btn_send_verify_loading": "发送中…",
+      "btn_retry_verify": "重试发送",
       "btn_resend_verify_countdown": "重新发送 ({seconds}s)",
       "status_unverified": "未验证 (Unverified)",
       "status_verified": "已验证 (Verified)",
       "msg_verify_email_sent": "验证邮件已发送，请查收。",
+      "msg_verify_email_error": "发送验证邮件失败，请稍后重试。",
       "btn_update_email": "更新邮箱",
       "hint_change_email_disabled": "更改邮箱功能将在后续版本提供。",
       "btn_sign_out": "退出登录",
