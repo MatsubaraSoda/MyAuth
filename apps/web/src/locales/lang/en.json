@@ -86,8 +86,8 @@
     },
     "verify_success": {
       "title": "Email verified successfully",
-      "description": "Your email has been verified. You can now return to your dashboard.",
-      "btn_back_to_console": "Back to dashboard"
+      "description": "Your email has been verified. You can now return to your profile.",
+      "btn_back_to_console": "Back to profile"
     },
     "profile": {
       "tab_account": "Account",

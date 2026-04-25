@@ -2,7 +2,6 @@ export type MailerEnv = {
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
   DEV_RESET_LINK?: string;
-  DEV_VERIFICATION_LINK?: string;
 };
 
 const FROM = "MatsubaraSoda <noreply@matsubarasoda.com>";
@@ -67,9 +66,40 @@ export async function sendResetPasswordEmail(params: {
   return response.json();
 }
 
-export async function sendVerificationEmail(email: string, url: string) {
-  // TODO: Replace with Resend API call
-  console.log(
-    `[MAILER_TODO] Verification email sending is not implemented yet (email: ${email}, url: ${url})`,
-  );
+export async function sendVerificationEmail(params: {
+  env: Pick<MailerEnv, "RESEND_API_KEY">;
+  to: string;
+  url: string;
+}) {
+  const { env, to, url } = params;
+
+  if (!env.RESEND_API_KEY?.trim()) {
+    throw new Error("RESEND_API_KEY is not configured");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: "Verify your email",
+      html: `
+      <p>Click the link below to verify your email:</p>
+      <p><a href="${url}">${url}</a></p>
+      <p>If you did not request this, you can ignore this email.</p>
+      <p>This mailbox is not monitored. Please do not reply.</p>
+    `,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Resend API request failed: ${response.status} ${errorText}`);
+  }
+
+  return response.json();
 }

@@ -22,8 +22,7 @@ function handleBackToConsole() {
 
 <template>
   <Card class="w-full max-w-sm">
-    <CardHeader class="items-center text-center">
-      <CircleCheckBig class="size-10 text-primary" />
+    <CardHeader class="items-center text-left">
       <CardTitle class="text-lg">
         {{ t('auth.verify_success.title') }}
       </CardTitle>
@@ -31,12 +30,8 @@ function handleBackToConsole() {
         {{ t('auth.verify_success.description') }}
       </CardDescription>
     </CardHeader>
-    <CardContent />
     <CardFooter>
-      <Button
-        class="w-full"
-        @click="handleBackToConsole"
-      >
+      <Button class="w-full cursor-pointer" @click="handleBackToConsole">
         {{ t('auth.verify_success.btn_back_to_console') }}
       </Button>
     </CardFooter>

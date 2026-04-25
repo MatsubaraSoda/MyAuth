@@ -14,20 +14,12 @@ type RuntimeEnv = {
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
   DEV_RESET_LINK?: string;
-  DEV_VERIFICATION_LINK?: string;
 } & GithubOAuthEnv;
 
 let cachedRuntimeAuth: ReturnType<typeof buildRuntimeAuth> | null = null;
 let cachedRuntimeDb: unknown = null;
 
 function buildRuntimeAuth(env: RuntimeEnv) {
-  const isDevVerificationLinkEnabled = (() => {
-    const raw = env.DEV_VERIFICATION_LINK?.trim();
-    if (!raw) return false;
-    const lower = raw.toLowerCase();
-    return lower === "true" || lower === "1" || lower === "yes";
-  })();
-
   return betterAuth({
     ...authBaseConfig,
     socialProviders: createGithubSocialProvidersConfig(env),
@@ -50,13 +42,13 @@ function buildRuntimeAuth(env: RuntimeEnv) {
       ...(authBaseConfig.emailVerification || {}),
       sendVerificationEmail: async ({ user, url, token }) => {
         void token;
-        if (isDevVerificationLinkEnabled) {
-          console.log(`\n📧 [DEV_VERIFICATION_LINK] Email sent to: ${user.email}`);
-          console.log(`👉 Click here to verify: \n${url}\n`);
-          return;
-        }
-
-        await sendVerificationEmail(user.email, url);
+        await sendVerificationEmail({
+          env: {
+            RESEND_API_KEY: env.RESEND_API_KEY,
+          },
+          to: user.email,
+          url,
+        });
       },
     },
     database: drizzleAdapter(drizzle(env.DB), {

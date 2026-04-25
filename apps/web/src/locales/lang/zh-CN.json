@@ -86,8 +86,8 @@
     },
     "verify_success": {
       "title": "邮箱验证成功",
-      "description": "你的邮箱已完成验证，现在可以继续使用控制台功能。",
-      "btn_back_to_console": "返回控制台"
+      "description": "你的邮箱已完成验证，现在可以返回个人资料页面。",
+      "btn_back_to_console": "返回个人资料"
     },
     "profile": {
       "tab_account": "账户",
