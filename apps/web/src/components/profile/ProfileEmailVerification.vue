@@ -119,14 +119,14 @@ onBeforeUnmount(() => {
               class="inline-flex cursor-default items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-none"
               :class="
                 isVerified
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
-                  : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300'
+                  ? 'bg-primary/15 text-primary'
+                  : 'bg-secondary text-secondary-foreground'
               "
               @click.alt.exact="handleBadgeAltClick"
             >
               <span
                 class="size-1.5 rounded-full"
-                :class="isVerified ? 'bg-emerald-500' : 'bg-amber-500'"
+                :class="isVerified ? 'bg-primary' : 'bg-muted-foreground'"
               />
               {{
                 isVerified
@@ -176,7 +176,7 @@ onBeforeUnmount(() => {
         >
           <p
             v-if="isSuccessHintVisible"
-            class="text-xs text-emerald-600 dark:text-emerald-400"
+            class="text-xs text-primary"
           >
             {{ t('auth.profile.msg_verify_email_sent') }}
           </p>
