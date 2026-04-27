@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { CircleCheckBig } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,

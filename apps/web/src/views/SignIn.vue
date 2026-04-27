@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { authClient } from '@/lib/auth-client'
 import { Github, Loader2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
@@ -34,7 +35,25 @@ async function handleSignIn() {
   }, {
     onRequest: () => { loading.value = true },
     onResponse: () => { loading.value = false },
-    onSuccess: () => { router.push('/profile') },
+    onSuccess: () => {
+      const redirect = route.query.redirect
+      const tab = route.query.tab
+      if (
+        typeof redirect === 'string'
+        && redirect.startsWith('/')
+        && !redirect.startsWith('//')
+      ) {
+        router.push({
+          path: redirect,
+          ...(tab === 'security'
+            ? { query: { tab: 'security' } }
+            : {}),
+        })
+      }
+      else {
+        router.push('/profile')
+      }
+    },
     onError: (ctx) => {
       errorMessage.value = ctx.error.message
     }

@@ -41,13 +41,12 @@ const router = createRouter({
     },
 
     // ==========================================
-    // 🚪 访客系统 (Guest Routes)
-    // 已经登录的用户不能再访问这些页面，会被弹回主页
+    // 🚪 Auth 布局（访客专享仅 sign-in / sign-up）
+    // forgot-password、reset-password 允许已登录访问（邮件链接常在同浏览器已有会话）
     // ==========================================
     {
       path: '/auth',
       component: AuthLayout,
-      meta: { requiresGuest: true },
       children: [
         {
           // 访问 /auth 时默认去登录页
@@ -57,11 +56,13 @@ const router = createRouter({
         {
           path: 'sign-in',
           name: 'SignIn',
+          meta: { requiresGuest: true },
           component: () => import('@/views/SignIn.vue')
         },
         {
           path: 'sign-up',
           name: 'SignUp',
+          meta: { requiresGuest: true },
           component: () => import('@/views/SignUp.vue')
         },
         {
