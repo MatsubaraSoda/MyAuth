@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Languages, Palette, Sun, Moon, Monitor, LogIn, UserRoundPlus, ChevronDown } from 'lucide-vue-next'
+import { Languages, Palette, Sun, Moon, Monitor, LogIn, UserRoundPlus, ChevronDown, LogOut, Loader2 } from 'lucide-vue-next'
 import { LOCALE_OPTIONS, type AppLocale } from '@/locales'
 import { useAppStore, PALETTE_OPTIONS } from '@/stores/app'
 import {
@@ -12,10 +12,27 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button'
+import { useAuthNavSession } from '@/composables/useAuthNavSession'
 
 const { t } = useI18n()
 const appStore = useAppStore()
-defineEmits(['close'])
+
+const {
+  user,
+  displayName,
+  isLoggedIn,
+  signingOut,
+  signOut,
+} = useAuthNavSession()
+
+const emit = defineEmits<{ close: [] }>()
+
+async function handleSignOut() {
+  const ok = await signOut()
+  if (ok)
+    emit('close')
+}
 
 function localeLabel(locale: AppLocale): string {
   return locale === 'en' ? t('layout.label_locale_en') : t('layout.label_locale_zh_CN')
@@ -153,7 +170,28 @@ const isNotebooksOpen = ref(false)
         </button>
       </div>
 
-      <div class="grid gap-2">
+      <div v-if="isLoggedIn" class="grid gap-2 rounded-md border px-3 py-3">
+        <div class="min-w-0 space-y-1">
+          <p class="truncate text-sm font-medium leading-snug">
+            {{ user?.name?.trim() || displayName || '—' }}
+          </p>
+          <p class="truncate text-xs text-muted-foreground">
+            {{ user?.email ?? '—' }}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          class="w-full cursor-pointer"
+          :disabled="signingOut"
+          @click="handleSignOut"
+        >
+          <Loader2 v-if="signingOut" class="mr-2 h-4 w-4 shrink-0 animate-spin" />
+          <LogOut v-else class="mr-2 h-4 w-4 shrink-0" />
+          {{ signingOut ? t('auth.profile.btn_sign_out_loading') : t('auth.profile.btn_sign_out') }}
+        </Button>
+      </div>
+      <div v-else class="grid gap-2">
         <RouterLink
           to="/auth/sign-in"
           class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent transition-colors"
