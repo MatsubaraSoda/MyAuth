@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import {
-  Eye,
-  EyeOff,
   Link2,
   Link2Off,
   Loader2,
@@ -11,17 +10,11 @@ import {
   X,
 } from 'lucide-vue-next'
 import { authClient } from '@/lib/auth-client'
+import ChangePassword from '@/components/profile/ChangePassword.vue'
+import SetPassword from '@/components/profile/SetPassword.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 
 const PLACEHOLDER_ICON = 'https://placehold.co/40x40'
@@ -31,18 +24,6 @@ const { t } = useI18n()
 const accountsLoading = ref(true)
 const accountsError = ref('')
 const hasCredentialAccount = ref(false)
-
-const currentPasswordDraft = ref('')
-const newPasswordDraft = ref('')
-const confirmPasswordDraft = ref('')
-const showNewPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-const setPasswordDraft = ref('')
-const confirmSetPasswordDraft = ref('')
-const showSetPasswordFields = ref(false)
-
-const passwordSectionError = ref('')
 
 /**
  * 解析 listAccounts 的返回（数组或 { data, error }），得到账户行列表。
@@ -73,7 +54,6 @@ function parseListAccountsPayload(result: unknown): {
 async function loadLinkedAccounts() {
   accountsLoading.value = true
   accountsError.value = ''
-  passwordSectionError.value = ''
   try {
     const result = await authClient.listAccounts()
     const { rows, message } = parseListAccountsPayload(result)
@@ -104,22 +84,9 @@ const passwordSectionHeading = computed(() => {
     : t('auth.profile.security.section_set_password')
 })
 
-function onPlaceholderChangePassword() {
-  passwordSectionError.value = ''
-  if (newPasswordDraft.value !== confirmPasswordDraft.value) {
-    passwordSectionError.value = t('auth.profile.security.err_pwd_mismatch')
-    return
-  }
-  void 0
-}
-
-function onPlaceholderSetPassword() {
-  passwordSectionError.value = ''
-  if (setPasswordDraft.value !== confirmSetPasswordDraft.value) {
-    passwordSectionError.value = t('auth.profile.security.err_pwd_mismatch')
-    return
-  }
-  void 0
+async function onSetPasswordSuccess() {
+  await loadLinkedAccounts()
+  toast.success(t('auth.profile.security.msg_set_password_success'))
 }
 </script>
 
@@ -148,228 +115,12 @@ function onPlaceholderSetPassword() {
           </p>
         </template>
 
-        <template v-else-if="hasCredentialAccount">
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="security-current-password"
-            >
-              {{ t('auth.profile.security.label_current_password') }}
-            </Label>
-            <Input
-              id="security-current-password"
-              v-model="currentPasswordDraft"
-              type="password"
-              autocomplete="current-password"
-              class="text-sm"
-              :placeholder="t('auth.profile.security.ph_current_password')"
-            />
-          </div>
+        <ChangePassword v-else-if="hasCredentialAccount" />
 
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="security-new-password"
-            >
-              {{ t('auth.profile.security.label_new_password') }}
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="security-new-password"
-                v-model="newPasswordDraft"
-                class="text-sm"
-                :type="showNewPassword ? 'text' : 'password'"
-                autocomplete="new-password"
-                :placeholder="t('auth.profile.security.ph_new_password')"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  type="button"
-                  :aria-label="
-                    showNewPassword
-                      ? t('auth.profile.security.aria_toggle_password_hide')
-                      : t('auth.profile.security.aria_toggle_password')
-                  "
-                  class="cursor-pointer rounded-[calc(var(--radius)-5px)]"
-                  @click="showNewPassword = !showNewPassword"
-                >
-                  <EyeOff
-                    v-if="showNewPassword"
-                    class="size-4"
-                  />
-                  <Eye
-                    v-else
-                    class="size-4"
-                  />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="security-confirm-password"
-            >
-              {{ t('auth.profile.security.label_confirm_password') }}
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="security-confirm-password"
-                v-model="confirmPasswordDraft"
-                class="text-sm"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                autocomplete="new-password"
-                :placeholder="t('auth.profile.security.ph_confirm_password')"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  type="button"
-                  :aria-label="
-                    showConfirmPassword
-                      ? t('auth.profile.security.aria_toggle_password_hide')
-                      : t('auth.profile.security.aria_toggle_password')
-                  "
-                  class="cursor-pointer rounded-[calc(var(--radius)-5px)]"
-                  @click="showConfirmPassword = !showConfirmPassword"
-                >
-                  <EyeOff
-                    v-if="showConfirmPassword"
-                    class="size-4"
-                  />
-                  <Eye
-                    v-else
-                    class="size-4"
-                  />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-
-          <p
-            v-if="passwordSectionError"
-            class="text-sm text-destructive"
-          >
-            {{ passwordSectionError }}
-          </p>
-
-          <div class="flex justify-start pt-1">
-            <Button
-              type="button"
-              class="h-auto min-h-0 cursor-pointer px-4 py-2 text-xs leading-tight"
-              @click="onPlaceholderChangePassword"
-            >
-              {{ t('auth.profile.security.btn_update_password') }}
-            </Button>
-          </div>
-        </template>
-
-        <template v-else>
-          <p class="text-sm text-muted-foreground">
-            {{ t('auth.profile.security.hint_oauth_set_password') }}
-          </p>
-
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="security-set-password"
-            >
-              {{ t('auth.profile.security.label_password') }}
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="security-set-password"
-                v-model="setPasswordDraft"
-                class="text-sm"
-                :type="showSetPasswordFields ? 'text' : 'password'"
-                autocomplete="new-password"
-                :placeholder="t('auth.profile.security.ph_password')"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  type="button"
-                  :aria-label="
-                    showSetPasswordFields
-                      ? t('auth.profile.security.aria_toggle_password_hide')
-                      : t('auth.profile.security.aria_toggle_password')
-                  "
-                  class="cursor-pointer rounded-[calc(var(--radius)-5px)]"
-                  @click="showSetPasswordFields = !showSetPasswordFields"
-                >
-                  <EyeOff
-                    v-if="showSetPasswordFields"
-                    class="size-4"
-                  />
-                  <Eye
-                    v-else
-                    class="size-4"
-                  />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-
-          <div class="space-y-2">
-            <Label
-              class="text-xs"
-              for="security-set-password-confirm"
-            >
-              {{ t('auth.profile.security.label_confirm_password') }}
-            </Label>
-            <InputGroup>
-              <InputGroupInput
-                id="security-set-password-confirm"
-                v-model="confirmSetPasswordDraft"
-                class="text-sm"
-                :type="showSetPasswordFields ? 'text' : 'password'"
-                autocomplete="new-password"
-                :placeholder="t('auth.profile.security.ph_confirm_password_set')"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  type="button"
-                  :aria-label="
-                    showSetPasswordFields
-                      ? t('auth.profile.security.aria_toggle_password_hide')
-                      : t('auth.profile.security.aria_toggle_password')
-                  "
-                  class="cursor-pointer rounded-[calc(var(--radius)-5px)]"
-                  @click="showSetPasswordFields = !showSetPasswordFields"
-                >
-                  <EyeOff
-                    v-if="showSetPasswordFields"
-                    class="size-4"
-                  />
-                  <Eye
-                    v-else
-                    class="size-4"
-                  />
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          </div>
-
-          <p
-            v-if="passwordSectionError"
-            class="text-sm text-destructive"
-          >
-            {{ passwordSectionError }}
-          </p>
-
-          <div class="flex justify-start pt-1">
-            <Button
-              type="button"
-              class="h-auto min-h-0 cursor-pointer px-4 py-2 text-xs leading-tight"
-              @click="onPlaceholderSetPassword"
-            >
-              {{ t('auth.profile.security.btn_set_password') }}
-            </Button>
-          </div>
-        </template>
+        <SetPassword
+          v-else
+          @success="onSetPasswordSuccess"
+        />
       </CardContent>
     </Card>
   </section>

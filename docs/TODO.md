@@ -33,11 +33,12 @@
   - 校验并统一当前登出能力：按钮调用后端 sign-out 接口，成功后清理本地状态并跳转登录页。
   - 可选扩展：支持“登出当前设备”与“登出所有设备”区分，为后续 sessions section 复用。
 
-- [ ] Section 4 - Change password（修改密码）
-  - 接入密码修改接口：提交 `currentPassword`、`newPassword`、`confirmPassword`，前端先做一致性校验。
-  - 增加成功后的会话策略：可配置“仅当前会话保留”或“强制其他会话下线”。
-  - 错误映射：将后端错误（旧密码错误、弱密码、不满足策略）转换为字段级提示。
-  - 后端配合：在 `src/auth.runtime.ts` 补充密码策略与修改密码动作的安全校验（限流、最小复杂度）。
+- [ x ] Section 4 - Change password（修改密码）
+  - OAuth 首次设密：`POST /api/account/set-password`（Worker 先校验尚无 `credential` 账户，再 `auth.api.setPassword`）；前端 Security 页「设置密码」已接入。
+  - **更改密码**：前端通过 `authClient.changePassword` 调用 Better Auth `POST /api/auth/change-password`；提交前校验确认一致、**新旧密码不得相同**；**`revokeOtherSessions: true`**（改密后撤销其它设备会话）。
+  - **敏感会话 / 403 / 未登录**：toast 提示并跳转 `/auth/sign-in?redirect=/profile&tab=security`，登录后回到「安全」标签（`Profile.vue` 支持 `?tab=security`）。
+  - 错误映射：`INVALID_PASSWORD`、`PASSWORD_TOO_SHORT` 等与行内文案（见 `ChangePassword.vue`）。
+  - 后端配合（迭代）：在 `src/auth.runtime.ts` 按需补充限流与密码复杂度策略。
 
 - [ ] Section 5 - Linked accounts（第三方账号绑定）
   - 接入已绑定列表查询：页面真实展示 provider 绑定状态（如 GitHub 已绑定/未绑定）。
