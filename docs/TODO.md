@@ -29,7 +29,7 @@
   - 页面状态处理：展示当前邮箱、新邮箱待确认状态、可重发验证邮件与取消流程。
   - 后端配合：在 `src/auth.runtime.ts` 增加邮件改绑相关能力（发信、token 存储与校验、防重复/限流）。
 
-- [ ] Section 3 - Manage accounts（账户管理 / 登出）
+- [ x ] Section 3 - Manage accounts（账户管理 / 登出）
   - 校验并统一当前登出能力：按钮调用后端 sign-out 接口，成功后清理本地状态并跳转登录页。
   - 可选扩展：支持“登出当前设备”与“登出所有设备”区分，为后续 sessions section 复用。
 

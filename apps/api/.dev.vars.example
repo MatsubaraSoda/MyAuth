@@ -1,0 +1,24 @@
+# 复制为 `.dev.vars`（勿提交仓库），再填入真实值。
+# Wrangler dev 会从 `apps/api` 目录加载 `.dev.vars`，见 apps/api/package.json → dev
+
+# ── Better Auth：与浏览器访问前端的 Origin 一致（经 Vite 代理 /api）
+# OAuth redirect_uri / 签发链接必须与 GitHub OAuth App 里 callback 域名一致。
+BETTER_AUTH_URL=http://localhost:5173
+
+# 邮件重置链接等「回到账户站」的根地址；本地可与上一项相同。
+ACCOUNT_URL=http://localhost:5173
+
+# Better Auth 签名会话等；与生产可共用或单独生成一串随机串。
+BETTER_AUTH_SECRET=
+
+# GitHub → Settings → Developer settings → OAuth Apps → 你为本地新建的应用
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+# Resend（邮件）；本地若只测 OAuth 可先填占位避免 Worker 报错（视你是否访问发信路径）
+RESEND_API_KEY=
+
+# Cloudinary（头像）；不上传头像时可占位
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=

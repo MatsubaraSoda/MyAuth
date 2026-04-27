@@ -5,6 +5,8 @@ import { avatarPublicId, signImageDestroy, signImageUpload } from './cloudinary-
 
 type Bindings = {
   DB: D1Database;
+  /** OAuth 回调与签发链接所依据的站点根 URL。本地应与 Vite 同源，例如 http://localhost:5173 */
+  BETTER_AUTH_URL?: string;
   RESEND_API_KEY: string;
   ACCOUNT_URL: string;
   DEV_RESET_LINK?: string;
