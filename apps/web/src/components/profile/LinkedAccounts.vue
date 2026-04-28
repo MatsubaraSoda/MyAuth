@@ -1,18 +1,34 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Link2, Link2Off, Loader2 } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
+import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 
 const props = defineProps<{
-  accounts: Array<{ providerId: string, accountId: string, [key: string]: any }>
+  accounts: Array<{ providerId: string, accountId: string, [key: string]: unknown }>
   loading: boolean
   hasCredentialAccount: boolean
   errorMessage?: string
 }>()
+const emit = defineEmits<{
+  refresh: []
+}>()
 
 const { t } = useI18n()
+const isActionLoading = ref(false)
+const unlinkDialogOpen = ref(false)
 
 const githubAccount = computed(() =>
   props.accounts.find(a => a?.providerId === 'github'),
@@ -56,6 +72,58 @@ watch(
   },
   { immediate: true },
 )
+
+onMounted(() => {
+  const currentURL = new URL(window.location.href)
+  const errorCode = currentURL.searchParams.get('error')
+  if (!errorCode)
+    return
+
+  toast.error(t('auth.profile.security.msg_oauth_callback_error', { code: errorCode }))
+
+  currentURL.searchParams.delete('error')
+  const cleanURL = `${currentURL.pathname}${currentURL.search}${currentURL.hash}`
+  window.history.replaceState(window.history.state, '', cleanURL)
+})
+
+async function handleLink() {
+  isActionLoading.value = true
+  try {
+    await authClient.linkSocial({
+      provider: 'github',
+      callbackURL: window.location.href,
+    })
+  } catch (error: unknown) {
+    void error
+    toast.error(t('auth.profile.security.msg_link_failed'))
+    isActionLoading.value = false
+  }
+}
+
+async function handleUnlink() {
+  isActionLoading.value = true
+  const { error } = await authClient.unlinkAccount({
+    providerId: 'github',
+  })
+  isActionLoading.value = false
+
+  if (error) {
+    toast.error(t('auth.profile.security.msg_unlink_failed'))
+    return
+  }
+  toast.success(t('auth.profile.security.msg_unlink_success'))
+  unlinkDialogOpen.value = false
+  emit('refresh')
+}
+
+function onPrimaryActionClick() {
+  if (hasGithubLinked.value) {
+    if (!cannotUnlink.value)
+      unlinkDialogOpen.value = true
+    return
+  }
+  void handleLink()
+}
 </script>
 
 <template>
@@ -117,11 +185,16 @@ watch(
                 type="button"
                 variant="outline"
                 class="h-auto min-h-0 shrink-0 cursor-pointer gap-1.5 px-2 py-2 text-xs leading-tight"
-                :disabled="hasGithubLinked && cannotUnlink"
+                :disabled="(hasGithubLinked && cannotUnlink) || isActionLoading"
                 :title="hasGithubLinked && cannotUnlink ? t('auth.profile.security.hint_cannot_unlink_last_key') : undefined"
+                @click="onPrimaryActionClick"
               >
+                <Loader2
+                  v-if="isActionLoading"
+                  class="size-3.5 shrink-0 animate-spin"
+                />
                 <Link2Off
-                  v-if="hasGithubLinked"
+                  v-else-if="hasGithubLinked"
                   class="size-3.5 shrink-0"
                 />
                 <Link2
@@ -142,6 +215,52 @@ watch(
               </p>
             </div>
           </div>
+
+          <DialogRoot v-model:open="unlinkDialogOpen">
+            <DialogPortal>
+              <DialogOverlay
+                class="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+              />
+              <DialogContent
+                class="bg-background data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-5 shadow-lg data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+              >
+                <div class="space-y-1">
+                  <DialogTitle class="text-base font-semibold">
+                    {{ t('auth.profile.security.unlink_confirm_title') }}
+                  </DialogTitle>
+                  <DialogDescription class="text-sm text-muted-foreground">
+                    {{ t('auth.profile.security.unlink_confirm_desc') }}
+                  </DialogDescription>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                  <DialogClose as-child>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="cursor-pointer"
+                      :disabled="isActionLoading"
+                    >
+                      {{ t('auth.profile.btn_cancel') }}
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    class="cursor-pointer gap-1.5"
+                    :disabled="isActionLoading"
+                    @click="handleUnlink"
+                  >
+                    <Loader2
+                      v-if="isActionLoading"
+                      class="size-3 shrink-0 animate-spin"
+                    />
+                    {{ t('auth.profile.security.btn_unlink') }}
+                  </Button>
+                </div>
+              </DialogContent>
+            </DialogPortal>
+          </DialogRoot>
         </template>
       </CardContent>
     </Card>

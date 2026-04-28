@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card'
 type AccountRow = {
   providerId: string
   accountId: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 const { t } = useI18n()
@@ -33,7 +33,7 @@ function parseListAccountsPayload(result: unknown): {
 } {
   const normalizeRows = (input: unknown[]): AccountRow[] =>
     input
-      .filter((item): item is Record<string, any> => Boolean(item && typeof item === 'object'))
+      .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
       .filter(item => typeof item.providerId === 'string' && typeof item.accountId === 'string')
       .map(item => item as AccountRow)
 
@@ -136,6 +136,7 @@ async function onSetPasswordSuccess() {
     :loading="accountsLoading"
     :has-credential-account="hasCredentialAccount"
     :error-message="accountsError"
+    @refresh="loadLinkedAccounts"
   />
 
   <ActiveSessions />
