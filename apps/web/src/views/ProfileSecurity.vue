@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 type AccountRow = {
-  providerId?: string
-  accountId?: string
+  providerId: string
+  accountId: string
+  [key: string]: any
 }
 
 const { t } = useI18n()
@@ -30,8 +31,14 @@ function parseListAccountsPayload(result: unknown): {
   rows: AccountRow[] | undefined
   message: string | undefined
 } {
+  const normalizeRows = (input: unknown[]): AccountRow[] =>
+    input
+      .filter((item): item is Record<string, any> => Boolean(item && typeof item === 'object'))
+      .filter(item => typeof item.providerId === 'string' && typeof item.accountId === 'string')
+      .map(item => item as AccountRow)
+
   if (Array.isArray(result)) {
-    return { rows: result as AccountRow[], message: undefined }
+    return { rows: normalizeRows(result), message: undefined }
   }
   if (result && typeof result === 'object') {
     const r = result as {
@@ -43,7 +50,7 @@ function parseListAccountsPayload(result: unknown): {
     }
     const d = r.data
     if (Array.isArray(d)) {
-      return { rows: d as AccountRow[], message: undefined }
+      return { rows: normalizeRows(d), message: undefined }
     }
   }
   return { rows: undefined, message: undefined }

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Link2, Link2Off, Loader2 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 const props = defineProps<{
-  accounts: Array<Record<string, any>>
+  accounts: Array<{ providerId: string, accountId: string, [key: string]: any }>
   loading: boolean
   hasCredentialAccount: boolean
   errorMessage?: string
@@ -19,11 +19,43 @@ const githubAccount = computed(() =>
 )
 
 const hasGithubLinked = computed(() => Boolean(githubAccount.value))
+const githubDisplayName = ref('')
 
 const cannotUnlink = computed(() => {
   const oauthAccountsCount = props.accounts.filter(a => a?.providerId !== 'credential').length
   return !props.hasCredentialAccount && oauthAccountsCount <= 1
 })
+
+async function fetchGithubUsername(accountId: string) {
+  githubDisplayName.value = `ID: ${accountId}`
+  try {
+    const res = await fetch(`https://api.github.com/user/${accountId}`)
+    if (!res.ok) {
+      githubDisplayName.value = `ID: ${accountId}`
+      return
+    }
+    const payload = await res.json() as { login?: unknown }
+    if (typeof payload.login === 'string' && payload.login.trim()) {
+      githubDisplayName.value = payload.login
+      return
+    }
+    githubDisplayName.value = `ID: ${accountId}`
+  } catch {
+    githubDisplayName.value = `ID: ${accountId}`
+  }
+}
+
+watch(
+  githubAccount,
+  (account) => {
+    if (account?.accountId) {
+      void fetchGithubUsername(account.accountId)
+      return
+    }
+    githubDisplayName.value = ''
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -74,7 +106,7 @@ const cannotUnlink = computed(() => {
                 <p class="truncate text-sm text-muted-foreground">
                   {{
                     hasGithubLinked
-                      ? `ID: ${githubAccount?.accountId ?? ''}`
+                      ? githubDisplayName
                       : t('auth.profile.security.github_link_hint')
                   }}
                 </p>
