@@ -25,7 +25,7 @@ const {
 } = useAuthNavSession()
 
 function localeLabel(locale: AppLocale): string {
-  return locale === 'en' ? t('layout.label_locale_en') : t('layout.label_locale_zh_CN')
+  return locale === 'en' ? t('layout.label_locale_en') : t('layout.label_locale_zh_Hans')
 }
 </script>
 

@@ -29,19 +29,14 @@ type ViewTransitionDocument = Document & {
 function readStoredLocale(): AppLocale | null {
   if (typeof window === 'undefined') return null
   const raw = window.localStorage.getItem(STORAGE_LANG_KEY)
-  if (raw === 'en' || raw === 'zh-CN') return raw
+  if (raw === 'en' || raw === 'zh-Hans') return raw
   if (raw === 'English') return 'en'
   return null
 }
 
-function localeFromBrowserDefault(): AppLocale {
-  if (typeof navigator === 'undefined') return DEFAULT_LOCALE
-  return navigator.language.toLowerCase().startsWith('zh') ? 'zh-CN' : DEFAULT_LOCALE
-}
-
-/** 首次进入：有合法持久化则用持久化，否则用语种/默认 */
+/** 首次进入：有合法持久化则用持久化，否则用默认 en */
 function resolveInitialLocale(): AppLocale {
-  return readStoredLocale() ?? localeFromBrowserDefault()
+  return readStoredLocale() ?? DEFAULT_LOCALE
 }
 
 function migrateLegacyLanguageInStorage(): void {
