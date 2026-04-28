@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Loader2, LogOut, X } from 'lucide-vue-next'
+import { CircleHelp, Loader2, LogOut, Monitor, Smartphone, X } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
 import { authClient } from '@/lib/auth-client'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,12 +19,15 @@ type SessionRow = {
 }
 
 const { t } = useI18n()
+const router = useRouter()
 
 const loading = ref(true)
 const errorMessage = ref('')
 const sessions = ref<SessionRow[]>([])
 const currentSessionId = ref<string | undefined>()
 const currentSessionToken = ref<string | undefined>()
+const revokingSessionToken = ref<string | null>(null)
+const isSigningOut = ref(false)
 
 function parseRows(result: unknown): SessionRow[] {
   if (Array.isArray(result))
@@ -89,12 +94,64 @@ function parseDevice(userAgent?: string | null): string {
   return t('auth.profile.security.session_device_label', { browser, os })
 }
 
+function getDeviceKind(userAgent?: string | null): 'pc' | 'mobile' | 'unknown' {
+  if (!userAgent)
+    return 'unknown'
+
+  const ua = userAgent.toLowerCase()
+  const isMobile = ua.includes('iphone')
+    || ua.includes('ipad')
+    || ua.includes('android')
+    || ua.includes('mobile')
+  if (isMobile)
+    return 'mobile'
+
+  const isPC = ua.includes('windows')
+    || ua.includes('mac os x')
+    || ua.includes('macintosh')
+    || ua.includes('linux')
+    || ua.includes('x11')
+  if (isPC)
+    return 'pc'
+
+  return 'unknown'
+}
+
 function isCurrentSession(row: SessionRow): boolean {
   if (currentSessionId.value && row.id)
     return row.id === currentSessionId.value
   if (currentSessionToken.value && row.token)
     return row.token === currentSessionToken.value
   return false
+}
+
+async function handleRevoke(token: string) {
+  revokingSessionToken.value = token
+  try {
+    const { error } = await authClient.revokeSession({ token })
+    if (error) {
+      toast.error(t('auth.profile.security.msg_session_revoke_failed'))
+      return
+    }
+    toast.success(t('auth.profile.security.msg_session_revoke_success'))
+    sessions.value = sessions.value.filter(row => row.token !== token)
+  } finally {
+    revokingSessionToken.value = null
+  }
+}
+
+async function handleSignOut() {
+  isSigningOut.value = true
+  try {
+    const { error } = await authClient.signOut()
+    if (error) {
+      toast.error(t('auth.profile.security.msg_sign_out_failed'))
+      return
+    }
+    await router.replace('/auth/sign-in')
+  } finally {
+    isSigningOut.value = false
+  }
 }
 
 onMounted(async () => {
@@ -171,29 +228,53 @@ onMounted(async () => {
             :key="row.id ?? row.token ?? idx"
           >
             <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-4">
-              <div class="min-w-0 space-y-1">
-                <p class="font-semibold leading-tight">
-                  {{ parseDevice(row.userAgent) }}
-                </p>
-                <p class="truncate text-sm text-muted-foreground">
-                  {{ formatRelativeTime(row.updatedAt ?? row.createdAt) }}
-                </p>
-                <Badge
-                  v-if="isCurrentSession(row)"
-                  variant="secondary"
-                  class="text-[10px] font-normal"
-                >
-                  {{ t('auth.profile.security.session_current_badge') }}
-                </Badge>
+              <div class="flex min-w-0 items-center gap-3">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40">
+                  <Monitor
+                    v-if="getDeviceKind(row.userAgent) === 'pc'"
+                    class="size-5"
+                  />
+                  <Smartphone
+                    v-else-if="getDeviceKind(row.userAgent) === 'mobile'"
+                    class="size-5"
+                  />
+                  <CircleHelp
+                    v-else
+                    class="size-5"
+                  />
+                </div>
+                <div class="min-w-0 space-y-1">
+                  <p class="font-semibold leading-tight">
+                    {{ parseDevice(row.userAgent) }}
+                  </p>
+                  <p
+                    v-if="!isCurrentSession(row)"
+                    class="truncate text-sm text-muted-foreground"
+                  >
+                    {{ formatRelativeTime(row.updatedAt ?? row.createdAt) }}
+                  </p>
+                  <Badge
+                    v-if="isCurrentSession(row)"
+                    variant="secondary"
+                    class="text-[10px] font-normal"
+                  >
+                    {{ t('auth.profile.security.session_current_badge') }}
+                  </Badge>
+                </div>
               </div>
               <Button
                 type="button"
                 variant="outline"
-                disabled
                 class="h-auto min-h-0 shrink-0 gap-1.5 px-2 py-2 text-xs leading-tight"
+                :disabled="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
+                @click="isCurrentSession(row) ? handleSignOut() : handleRevoke(row.token!)"
               >
+                <Loader2
+                  v-if="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
+                  class="size-3.5 shrink-0 animate-spin"
+                />
                 <LogOut
-                  v-if="isCurrentSession(row)"
+                  v-else-if="isCurrentSession(row)"
                   class="size-3.5 shrink-0"
                 />
                 <X
