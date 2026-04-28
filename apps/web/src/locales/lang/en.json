@@ -20,7 +20,7 @@
     "btn_sign_in": "Sign In",
     "btn_sign_up": "Sign Up",
     "label_locale_en": "English",
-    "label_locale_zh_CN": "简体中文"
+    "label_locale_zh_Hans": "简体中文"
   },
   "auth": {
     "sign_in": {

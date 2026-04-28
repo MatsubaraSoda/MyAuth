@@ -2,17 +2,17 @@ import messages from '@intlify/unplugin-vue-i18n/messages'
 import { createI18n } from 'vue-i18n'
 
 /** 与 JSON 文件名 / vue-i18n locale 对齐 */
-export type AppLocale = 'en' | 'zh-CN'
+export type AppLocale = 'en' | 'zh-Hans'
 
-export const SUPPORTED_LOCALES: readonly AppLocale[] = ['en', 'zh-CN'] as const
+export const SUPPORTED_LOCALES: readonly AppLocale[] = ['en', 'zh-Hans'] as const
 
 /** Pinia 无持久化记录时的默认语言（与业务约定一致时可改） */
 export const DEFAULT_LOCALE: AppLocale = 'en'
 
-/** 语言切换 UI：badge 为 locale 代码（en / zh-CN），展示名称见 i18n `layout.label_locale_*` */
+/** 语言切换 UI：badge 为 locale 代码（en / zh-Hans），展示名称见 i18n `layout.label_locale_*` */
 export const LOCALE_OPTIONS: { value: AppLocale; code: string }[] = [
   { value: 'en', code: 'en' },
-  { value: 'zh-CN', code: 'zh-CN' },
+  { value: 'zh-Hans', code: 'zh-Hans' },
 ]
 
 export const i18n = createI18n({
