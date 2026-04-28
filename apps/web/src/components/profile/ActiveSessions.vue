@@ -229,7 +229,7 @@ onMounted(async () => {
           >
             <div class="flex flex-wrap items-center justify-between gap-4 px-6 py-4">
               <div class="flex min-w-0 items-center gap-3">
-                <div class="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40">
+                <div class="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-muted">
                   <Monitor
                     v-if="getDeviceKind(row.userAgent) === 'pc'"
                     class="size-5"
@@ -243,7 +243,7 @@ onMounted(async () => {
                     class="size-5"
                   />
                 </div>
-                <div class="min-w-0 space-y-1">
+                <div class="min-w-0">
                   <p class="font-semibold leading-tight">
                     {{ parseDevice(row.userAgent) }}
                   </p>
@@ -262,31 +262,33 @@ onMounted(async () => {
                   </Badge>
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                class="h-auto min-h-0 shrink-0 gap-1.5 px-2 py-2 text-xs leading-tight"
-                :disabled="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
-                @click="isCurrentSession(row) ? handleSignOut() : handleRevoke(row.token!)"
-              >
-                <Loader2
-                  v-if="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
-                  class="size-3.5 shrink-0 animate-spin"
-                />
-                <LogOut
-                  v-else-if="isCurrentSession(row)"
-                  class="size-3.5 shrink-0"
-                />
-                <X
-                  v-else
-                  class="size-3.5 shrink-0"
-                />
-                {{
-                  isCurrentSession(row)
-                    ? t('auth.profile.security.btn_session_sign_out')
-                    : t('auth.profile.security.btn_revoke')
-                }}
-              </Button>
+              <div class="shrink-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  class="h-auto min-h-0 shrink-0 cursor-pointer gap-1.5 px-2 py-2 text-xs leading-tight"
+                  :disabled="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
+                  @click="isCurrentSession(row) ? handleSignOut() : handleRevoke(row.token!)"
+                >
+                  <Loader2
+                    v-if="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
+                    class="size-3.5 shrink-0 animate-spin"
+                  />
+                  <LogOut
+                    v-else-if="isCurrentSession(row)"
+                    class="size-3.5 shrink-0"
+                  />
+                  <X
+                    v-else
+                    class="size-3.5 shrink-0"
+                  />
+                  {{
+                    isCurrentSession(row)
+                      ? t('auth.profile.security.btn_session_sign_out')
+                      : t('auth.profile.security.btn_revoke')
+                  }}
+                </Button>
+              </div>
             </div>
 
             <Separator v-if="idx < sessions.length - 1" />
