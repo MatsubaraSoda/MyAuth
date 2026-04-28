@@ -104,10 +104,7 @@ async function onSetPasswordSuccess() {
     </h2>
     <Card>
       <CardContent class="space-y-4">
-        <div
-          v-if="accountsLoading"
-          class="flex items-center gap-2 py-6 text-sm text-muted-foreground"
-        >
+        <div v-if="accountsLoading" class="flex items-center gap-2 py-6 text-sm text-muted-foreground">
           <Loader2 class="size-4 shrink-0 animate-spin" />
           <span>{{ t('auth.profile.security.msg_accounts_loading') }}</span>
         </div>
@@ -123,21 +120,13 @@ async function onSetPasswordSuccess() {
 
         <ChangePassword v-else-if="hasCredentialAccount" />
 
-        <SetPassword
-          v-else
-          @success="onSetPasswordSuccess"
-        />
+        <SetPassword v-else @success="onSetPasswordSuccess" />
       </CardContent>
     </Card>
   </section>
 
-  <LinkedAccounts
-    :accounts="accounts"
-    :loading="accountsLoading"
-    :has-credential-account="hasCredentialAccount"
-    :error-message="accountsError"
-    @refresh="loadLinkedAccounts"
-  />
+  <LinkedAccounts :accounts="accounts" :loading="accountsLoading" :has-credential-account="hasCredentialAccount"
+    :error-message="accountsError" @refresh="loadLinkedAccounts" />
 
   <ActiveSessions />
 
@@ -147,7 +136,7 @@ async function onSetPasswordSuccess() {
       {{ t('auth.profile.security.section_danger_zone') }}
     </h2>
     <Card>
-      <CardContent class="flex flex-col items-start gap-4">
+      <CardContent class="flex flex-col items-start gap-3">
         <div class="min-w-0 max-w-prose space-y-1">
           <p class="font-semibold">
             {{ t('auth.profile.security.danger_delete_title') }}
@@ -156,13 +145,14 @@ async function onSetPasswordSuccess() {
             {{ t('auth.profile.security.danger_delete_desc') }}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="destructive"
-          class="h-auto min-h-0 shrink-0 cursor-pointer px-3 py-2 text-xs leading-tight"
-        >
-          {{ t('auth.profile.security.btn_delete_user') }}
-        </Button>
+
+        <span class="cursor-not-allowed inline-block">
+          <Button type="button" variant="destructive" disabled
+            class="pointer-events-none h-auto min-h-0 shrink-0 px-3 py-2 text-xs leading-tight opacity-60">
+            {{ t('auth.profile.security.btn_delete_user') }}
+          </Button>
+        </span>
+
       </CardContent>
     </Card>
   </section>

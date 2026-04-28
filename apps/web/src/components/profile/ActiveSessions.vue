@@ -9,6 +9,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from 'reka-ui'
 
 type SessionRow = {
   id?: string
@@ -28,6 +37,9 @@ const currentSessionId = ref<string | undefined>()
 const currentSessionToken = ref<string | undefined>()
 const revokingSessionToken = ref<string | null>(null)
 const isSigningOut = ref(false)
+const signOutDialogOpen = ref(false)
+const revokeDialogOpen = ref(false)
+const pendingRevokeToken = ref<string | null>(null)
 
 function parseRows(result: unknown): SessionRow[] {
   if (Array.isArray(result))
@@ -135,6 +147,8 @@ async function handleRevoke(token: string) {
     }
     toast.success(t('auth.profile.security.msg_session_revoke_success'))
     sessions.value = sessions.value.filter(row => row.token !== token)
+    revokeDialogOpen.value = false
+    pendingRevokeToken.value = null
   } finally {
     revokingSessionToken.value = null
   }
@@ -148,10 +162,22 @@ async function handleSignOut() {
       toast.error(t('auth.profile.security.msg_sign_out_failed'))
       return
     }
+    signOutDialogOpen.value = false
     await router.replace('/auth/sign-in')
   } finally {
     isSigningOut.value = false
   }
+}
+
+function onSessionActionClick(row: SessionRow) {
+  if (isCurrentSession(row)) {
+    signOutDialogOpen.value = true
+    return
+  }
+  if (!row.token)
+    return
+  pendingRevokeToken.value = row.token
+  revokeDialogOpen.value = true
 }
 
 onMounted(async () => {
@@ -267,8 +293,8 @@ onMounted(async () => {
                   type="button"
                   variant="outline"
                   class="h-auto min-h-0 shrink-0 cursor-pointer gap-1.5 px-2 py-2 text-xs leading-tight"
-                  :disabled="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
-                  @click="isCurrentSession(row) ? handleSignOut() : handleRevoke(row.token!)"
+                  :disabled="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token || !row.token"
+                  @click="onSessionActionClick(row)"
                 >
                   <Loader2
                     v-if="isCurrentSession(row) ? isSigningOut : revokingSessionToken === row.token"
@@ -293,6 +319,98 @@ onMounted(async () => {
 
             <Separator v-if="idx < sessions.length - 1" />
           </template>
+
+          <DialogRoot v-model:open="signOutDialogOpen">
+            <DialogPortal>
+              <DialogOverlay
+                class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+              />
+              <DialogContent
+                class="bg-background data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-5 shadow-lg data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+              >
+                <div class="space-y-1">
+                  <DialogTitle class="text-base font-semibold">
+                    {{ t('auth.profile.security.sign_out_confirm_title') }}
+                  </DialogTitle>
+                  <DialogDescription class="text-sm text-muted-foreground">
+                    {{ t('auth.profile.security.sign_out_confirm_desc') }}
+                  </DialogDescription>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                  <DialogClose as-child>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="cursor-pointer"
+                      :disabled="isSigningOut"
+                    >
+                      {{ t('auth.profile.btn_cancel') }}
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    class="cursor-pointer gap-1.5"
+                    :disabled="isSigningOut"
+                    @click="handleSignOut"
+                  >
+                    <Loader2
+                      v-if="isSigningOut"
+                      class="size-3 shrink-0 animate-spin"
+                    />
+                    {{ t('auth.profile.security.btn_session_sign_out') }}
+                  </Button>
+                </div>
+              </DialogContent>
+            </DialogPortal>
+          </DialogRoot>
+
+          <DialogRoot v-model:open="revokeDialogOpen">
+            <DialogPortal>
+              <DialogOverlay
+                class="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+              />
+              <DialogContent
+                class="bg-background data-[state=closed]:animate-out data-[state=open]:animate-in fixed top-1/2 left-1/2 z-50 grid w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-5 shadow-lg data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+              >
+                <div class="space-y-1">
+                  <DialogTitle class="text-base font-semibold">
+                    {{ t('auth.profile.security.revoke_confirm_title') }}
+                  </DialogTitle>
+                  <DialogDescription class="text-sm text-muted-foreground">
+                    {{ t('auth.profile.security.revoke_confirm_desc') }}
+                  </DialogDescription>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                  <DialogClose as-child>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      class="cursor-pointer"
+                      :disabled="Boolean(revokingSessionToken)"
+                    >
+                      {{ t('auth.profile.btn_cancel') }}
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    class="cursor-pointer gap-1.5"
+                    :disabled="!pendingRevokeToken || Boolean(revokingSessionToken)"
+                    @click="pendingRevokeToken && handleRevoke(pendingRevokeToken)"
+                  >
+                    <Loader2
+                      v-if="Boolean(revokingSessionToken)"
+                      class="size-3 shrink-0 animate-spin"
+                    />
+                    {{ t('auth.profile.security.btn_revoke') }}
+                  </Button>
+                </div>
+              </DialogContent>
+            </DialogPortal>
+          </DialogRoot>
         </template>
       </CardContent>
     </Card>
