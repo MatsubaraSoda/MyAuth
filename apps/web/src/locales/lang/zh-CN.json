@@ -134,6 +134,7 @@
         "linked_account_not_connected": "未关联",
         "btn_unlink": "解除关联",
         "btn_link": "关联",
+        "hint_cannot_unlink_last_key": "为了您的账号安全，在移除此关联前，请先设置密码或绑定其他账号。",
         "section_active_sessions": "活动会话",
         "session_current_badge": "当前会话",
         "msg_sessions_loading": "正在加载会话列表…",

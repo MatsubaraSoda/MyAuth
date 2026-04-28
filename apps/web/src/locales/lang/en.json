@@ -134,6 +134,7 @@
         "linked_account_not_connected": "Not connected",
         "btn_unlink": "Unlink",
         "btn_link": "Link",
+        "hint_cannot_unlink_last_key": "For your account security, set a password or link another account before removing this connection.",
         "section_active_sessions": "Active sessions",
         "session_current_badge": "Current session",
         "msg_sessions_loading": "Loading sessions…",

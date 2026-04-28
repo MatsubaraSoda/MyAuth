@@ -127,6 +127,7 @@ async function onSetPasswordSuccess() {
   <LinkedAccounts
     :accounts="accounts"
     :loading="accountsLoading"
+    :has-credential-account="hasCredentialAccount"
     :error-message="accountsError"
   />
 
